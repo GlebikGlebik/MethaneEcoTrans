@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,12 +50,12 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
-import com.MethaneEcoTrans.METR.theme.CustomTurquoiseBlue
-import com.MethaneEcoTrans.METR.theme.CustomTrafficWhite
-import com.MethaneEcoTrans.METR.theme.CustomCarpiBlue
-import com.MethaneEcoTrans.METR.theme.CustomDeepOrange
-import com.MethaneEcoTrans.METR.theme.CustomEnterBarColor
-import com.MethaneEcoTrans.METR.theme.CustomGrey
+import com.methane.eco.trans.theme.CustomTurquoiseBlue
+import com.methane.eco.trans.theme.CustomTrafficWhite
+import com.methane.eco.trans.theme.CustomCarpiBlue
+import com.methane.eco.trans.theme.CustomDeepOrange
+import com.methane.eco.trans.theme.CustomEnterBarColor
+import com.methane.eco.trans.theme.CustomGrey
 
 @Composable
 fun MainScreen(navController: NavController){

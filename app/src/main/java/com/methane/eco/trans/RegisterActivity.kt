@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 import android.util.Log
 import androidx.compose.runtime.Composable

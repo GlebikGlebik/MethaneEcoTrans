@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,12 +30,12 @@ import androidx.compose.ui.text.TextStyle
 import android.util.Patterns
 import androidx.compose.foundation.layout.offset
 import android.util.Log
-import com.MethaneEcoTrans.METR.theme.CustomTurquoiseBlue
-import com.MethaneEcoTrans.METR.theme.CustomTrafficWhite
-import com.MethaneEcoTrans.METR.theme.CustomCarpiBlue
-import com.MethaneEcoTrans.METR.theme.CustomEnterBarColor
-import com.MethaneEcoTrans.METR.theme.CustomGrey
-import com.MethaneEcoTrans.METR.theme.CustomErrorBarBackgroundColor
+import com.methane.eco.trans.theme.CustomTurquoiseBlue
+import com.methane.eco.trans.theme.CustomTrafficWhite
+import com.methane.eco.trans.theme.CustomCarpiBlue
+import com.methane.eco.trans.theme.CustomEnterBarColor
+import com.methane.eco.trans.theme.CustomGrey
+import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
 
 @Composable
 fun RegistrationScreen(navController: NavController) {

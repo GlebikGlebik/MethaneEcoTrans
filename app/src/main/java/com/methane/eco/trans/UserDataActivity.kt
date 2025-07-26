@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase

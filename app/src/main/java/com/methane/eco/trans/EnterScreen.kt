@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 
 import android.util.Patterns
@@ -26,11 +26,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
-import com.MethaneEcoTrans.METR.theme.CustomTurquoiseBlue
-import com.MethaneEcoTrans.METR.theme.CustomTrafficWhite
-import com.MethaneEcoTrans.METR.theme.CustomCarpiBlue
-import com.MethaneEcoTrans.METR.theme.CustomEnterBarColor
-import com.MethaneEcoTrans.METR.theme.CustomGrey
+import com.methane.eco.trans.theme.CustomTurquoiseBlue
+import com.methane.eco.trans.theme.CustomTrafficWhite
+import com.methane.eco.trans.theme.CustomCarpiBlue
+import com.methane.eco.trans.theme.CustomEnterBarColor
+import com.methane.eco.trans.theme.CustomGrey
 
 @Composable
 fun EnterScreen(navController: NavController) {
