@@ -11,6 +11,7 @@ import com.methane.eco.trans.theme.METTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 
+
 val segoe_ui_bold = FontFamily(
     Font(R.font.segoe_ui_bold)
 )

@@ -1,40 +1,22 @@
 {
   "project_info": {
-    "project_number": "990710667997",
-    "project_id": "met-project-fdcef",
-    "storage_bucket": "met-project-fdcef.firebasestorage.app"
+    "project_number": "813371132814",
+    "firebase_url": "https://methaneecotrans-default-rtdb.firebaseio.com",
+    "project_id": "methaneecotrans",
+    "storage_bucket": "methaneecotrans.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990710667997:android:d27f53fa6e0fc8b1ef5934",
+        "mobilesdk_app_id": "1:813371132814:android:8a7850cae27f1a3a09b2df",
         "android_client_info": {
-          "package_name": "com.MethaneEcoTrans.METR"
+          "package_name": "com.methane.eco.trans"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB0Sr7uZ7BdcXsG5kqQ1LX3JJN30FLsiJ0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:990710667997:android:fd14cc5d509e39ffef5934",
-        "android_client_info": {
-          "package_name": "com.example.met"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyB0Sr7uZ7BdcXsG5kqQ1LX3JJN30FLsiJ0"
+          "current_key": "AIzaSyA_v76myVe0k5pOgXSI92L33igyMQrM8GM"
         }
       ],
       "services": {
