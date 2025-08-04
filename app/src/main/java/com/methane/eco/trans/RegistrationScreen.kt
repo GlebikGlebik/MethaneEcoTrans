@@ -48,7 +48,9 @@ fun RegistrationScreen(navController: NavController) {
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
-        var k by remember {mutableStateOf(0.dp)}
+
+        val connection = ConnectionManager.connection
+        val statement = ConnectionManager.statement
 
         // Отслеживание состояний
         var password by remember { mutableStateOf("") }

@@ -14,9 +14,9 @@ suspend fun checkEmailVerification(
     onVerificationFailure: (String) -> Unit
 ) {
 
-    // ждем подтверждения почты от пользователя в течение 1 минуты (60000 мс)
+    // ждем подтверждения почты от пользователя в течение 2 минуты (60000 мс)
     val startTime = System.currentTimeMillis()
-    val timeout = 60000L // 1 минута
+    val timeout = 120000L // 2 минута
     val interval = 5000L // 5 секунд
 
     while (System.currentTimeMillis() - startTime < timeout){

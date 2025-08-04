@@ -1,6 +1,5 @@
 package com.methane.eco.trans
 
-
 import android.util.Patterns
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -80,6 +79,7 @@ fun EnterScreen(navController: NavController) {
                     snackbarHostState = snackbarHostState,
                     coroutineScope = coroutineScope
                 )
+
             } else {
                 if (emailError && !emptyFieldsError) {
                     isLoading = false
