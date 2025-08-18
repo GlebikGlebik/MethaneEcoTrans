@@ -25,6 +25,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
+import kotlinx.coroutines.Dispatchers
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
@@ -71,15 +72,22 @@ fun EnterScreen(navController: NavController) {
             emptyFieldsError = email.isEmpty() || password.isEmpty()
 
             if (!emailError && !emptyFieldsError){
-                signInUser(
-                    auth = auth,
-                    email = email,
-                    password = password,
-                    navController = navController,
-                    snackbarHostState = snackbarHostState,
-                    coroutineScope = coroutineScope
-                )
-
+//                signInUser(
+//                    auth = auth,
+//                    email = email,
+//                    password = password,
+//                    navController = navController,
+//                    snackbarHostState = snackbarHostState,
+//                    coroutineScope = coroutineScope
+//                )
+                coroutineScope.launch(Dispatchers.IO) {
+                    checkUserByEmailAndPassword(
+                        email = email,
+                        password = password,
+                        navController = navController,
+                        snackbarHostState = snackbarHostState,
+                    )
+                }
             } else {
                 if (emailError && !emptyFieldsError) {
                     isLoading = false
@@ -246,7 +254,7 @@ fun EnterScreen(navController: NavController) {
 
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable(){
+                    .clickable{
                         if (!isLoading){
                             isLoading = true
                             onEnterClick()

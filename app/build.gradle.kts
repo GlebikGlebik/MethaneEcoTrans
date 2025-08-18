@@ -80,5 +80,5 @@ dependencies {
     implementation(libs.plot)
 
     // JDBC
-    implementation(libs.postgresql)
+    implementation("org.postgresql:postgresql:42.7.7")
 }

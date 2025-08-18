@@ -30,12 +30,17 @@ import androidx.compose.ui.text.TextStyle
 import android.util.Patterns
 import androidx.compose.foundation.layout.offset
 import android.util.Log
+import androidx.compose.runtime.rememberCoroutineScope
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun RegistrationScreen(navController: NavController) {
@@ -49,8 +54,8 @@ fun RegistrationScreen(navController: NavController) {
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
 
-        val connection = ConnectionManager.connection
-        val statement = ConnectionManager.statement
+        // Для корутин в @composable
+        val coroutineScope = rememberCoroutineScope()
 
         // Отслеживание состояний
         var password by remember { mutableStateOf("") }
