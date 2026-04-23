@@ -94,7 +94,7 @@ fun ProfileScreen(navController: NavController){
         var userName by remember { mutableStateOf("") }
         var userSurname by remember { mutableStateOf("") }
 
-        // переменные ранспорта
+        // переменные транспорта
         var currentVehicle by remember { mutableStateOf("") }
         var userVehicles by remember { mutableStateOf<List<String>>(emptyList()) }
         val vehiclesRef = database.getReference("users").child(user?.uid.toString()).child("vehicles")

@@ -87,4 +87,6 @@ dependencies {
     implementation("com.github.madrapps:plot:0.1.1")
     implementation("com.patrykandpatrick.vico:compose:1.12.0")
     implementation("com.patrykandpatrick.vico:core:1.12.0")
+    //Room
+    implementation("androidx.room:room-runtime:2.8.4")
 }
