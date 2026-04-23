@@ -1,4 +1,4 @@
-package com.MethaneEcoTrans.METR.theme
+package com.methane.eco.trans.theme
 
 import androidx.compose.ui.graphics.Color
 

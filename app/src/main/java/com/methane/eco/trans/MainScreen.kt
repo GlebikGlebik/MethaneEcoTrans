@@ -1,8 +1,7 @@
-package com.MethaneEcoTrans.METR
+package com.methane.eco.trans
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -16,8 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.navigation.NavController
 import androidx.compose.foundation.border
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.BasicTextField
@@ -29,7 +26,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import com.MethaneEcoTrans.METR.theme.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,21 +48,14 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.coroutineScope
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
-import com.MethaneEcoTrans.METR.theme.CustomTurquoiseBlue
-import com.MethaneEcoTrans.METR.theme.CustomTrafficWhite
-import com.MethaneEcoTrans.METR.theme.CustomCarpiBlue
-import com.MethaneEcoTrans.METR.theme.CustomDeepOrange
-import com.MethaneEcoTrans.METR.theme.CustomEnterBarColor
-import com.MethaneEcoTrans.METR.theme.CustomGrey
-
-
-fun isDateValid(date: String): Boolean {
-    val regex = """^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.\d{4}$""".toRegex()
-    return date.matches(regex)
-}
+import com.methane.eco.trans.theme.CustomTurquoiseBlue
+import com.methane.eco.trans.theme.CustomTrafficWhite
+import com.methane.eco.trans.theme.CustomCarpiBlue
+import com.methane.eco.trans.theme.CustomDeepOrange
+import com.methane.eco.trans.theme.CustomEnterBarColor
+import com.methane.eco.trans.theme.CustomGrey
 
 @Composable
 fun MainScreen(navController: NavController){
@@ -434,6 +423,7 @@ fun MainScreen(navController: NavController){
                                                     if (newText.length <= 10) {
                                                         date = newText
                                                     }
+
                                                 },
                                                 textStyle = TextStyle(
                                                     color = CustomGrey,

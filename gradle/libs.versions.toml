@@ -1,10 +1,17 @@
 [versions]
 agp = "8.9.0"
+compose = "1.12.0"
+firebaseAuthKtx = "23.2.1"
+firebaseBom = "34.0.0"
+firebaseAuthVersion = "24.0.0"
+firebaseDatabase = "22.0.0"
+googleServices = "4.4.3"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinxCoroutinesPlayServices = "1.9.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
@@ -12,9 +19,31 @@ firebaseAuth = "23.2.0"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
+material = "1.8.3"
+material3 = "1.3.2"
+navigationFragmentKtx = "2.9.2"
+pgjdbcAndroid = "1.0.0"
+playServicesAuth = "21.4.0"
+plot = "0.1.1"
+postgresql = "42.7.7"
+ui = "1.8.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationFragmentKtx" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
+androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
+compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "compose" }
+core = { module = "com.patrykandpatrick.vico:core", version.ref = "compose" }
+firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+firebase-auth-v2400 = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuthVersion" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx" }
+firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
+firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
+google-firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -32,6 +61,13 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
+material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+pgjdbc-android = { module = "com.github.pgjdbc:pgjdbc-android", version.ref = "pgjdbcAndroid" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+plot = { module = "com.github.madrapps:plot", version.ref = "plot" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
