@@ -16,7 +16,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 object ConnectionManager {
-    private const val PASSWORD = "Plmnko_20014"
+    private const val PASSWORD = ""
     private const val USERNAME = "postgres"
     private const val URL = "jdbc:postgresql://192.168.0.88:5432/test_database_1"
 
