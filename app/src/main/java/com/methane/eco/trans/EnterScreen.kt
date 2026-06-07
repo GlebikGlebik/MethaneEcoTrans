@@ -26,6 +26,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.methane.eco.trans.presentation.sealedclass.EnterScreenEvent
+import com.methane.eco.trans.presentation.viewmodel.AuthViewModel
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
@@ -33,7 +37,20 @@ import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 
 @Composable
-fun EnterScreen(navController: NavController) {
+fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewModel()) {
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is EnterScreenEvent.ShowSnackbar -> { /* показать снекбар */ }
+                is EnterScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") }
+                is EnterScreenEvent.NavigateToRegistrationScreen -> { navController.navigate("RegistrationScreen") }
+            }
+        }
+    }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
