@@ -1,4 +1,4 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.regscreen
 
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,16 +31,15 @@ import android.util.Patterns
 import androidx.compose.foundation.layout.offset
 import android.util.Log
 import androidx.compose.runtime.rememberCoroutineScope
+import com.methane.eco.trans.saveUserData
+import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun RegistrationScreen(navController: NavController) {
