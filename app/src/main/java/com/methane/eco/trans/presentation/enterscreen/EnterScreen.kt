@@ -1,4 +1,4 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.enterscreen
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
@@ -22,14 +22,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.methane.eco.trans.data.repository.MockAuthRepository
 import com.methane.eco.trans.domain.usecase.AuthUseCase
-import com.methane.eco.trans.presentation.sealedclass.EnterScreenEvent
 import com.methane.eco.trans.presentation.viewmodel.AuthViewModel
+import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
@@ -269,7 +271,7 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
 
             }
         }
-        androidx.compose.material3.SnackbarHost(
+        SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.TopCenter)
         )

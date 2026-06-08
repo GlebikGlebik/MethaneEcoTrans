@@ -1,4 +1,4 @@
-package com.methane.eco.trans.presentation.dataclass
+package com.methane.eco.trans.presentation.enterscreen
 
 data class EnterScreenUiState(
     val email: String = "",

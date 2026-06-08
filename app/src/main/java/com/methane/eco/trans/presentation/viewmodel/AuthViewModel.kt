@@ -8,11 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import android.util.Patterns
 import com.methane.eco.trans.domain.model.AuthResult
 import com.methane.eco.trans.domain.usecase.AuthUseCase
-import com.methane.eco.trans.presentation.dataclass.EnterScreenUiState
-import com.methane.eco.trans.presentation.sealedclass.EnterScreenEvent
+import com.methane.eco.trans.presentation.enterscreen.EnterScreenUiState
+import com.methane.eco.trans.presentation.enterscreen.EnterScreenEvent
 
 class AuthViewModel(
     private val authUseCase: AuthUseCase

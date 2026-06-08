@@ -1,4 +1,4 @@
-package com.methane.eco.trans.presentation.sealedclass
+package com.methane.eco.trans.presentation.enterscreen
 
 sealed class EnterScreenEvent {
     data class ShowSnackbar(val message: String) : EnterScreenEvent()
