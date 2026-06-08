@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import com.methane.eco.trans.domain.model.AuthResult
+import com.methane.eco.trans.domain.model.EnterResult
 import com.methane.eco.trans.domain.usecase.AuthUseCase
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenUiState
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenEvent
 
-class AuthViewModel(
+class EnterViewModel(
     private val authUseCase: AuthUseCase
 ): ViewModel() {
 
@@ -55,10 +55,10 @@ class AuthViewModel(
 
             // обработка результата
             when (result) {
-                is AuthResult.Success -> {
+                is EnterResult.Success -> {
                     _events.send(EnterScreenEvent.NavigateToMainScreen)
                 }
-                is AuthResult.Error -> {
+                is EnterResult.Error -> {
                     _events.send(EnterScreenEvent.ShowSnackbar(result.message))
                 }
             }

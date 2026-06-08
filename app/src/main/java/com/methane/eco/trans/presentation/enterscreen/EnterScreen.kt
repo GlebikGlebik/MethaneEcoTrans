@@ -29,7 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.methane.eco.trans.data.repository.MockAuthRepository
 import com.methane.eco.trans.domain.usecase.AuthUseCase
-import com.methane.eco.trans.presentation.viewmodel.AuthViewModel
+import com.methane.eco.trans.presentation.viewmodel.EnterViewModel
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
@@ -40,12 +40,12 @@ import com.methane.eco.trans.theme.CustomGrey
 
 
 @Composable
-fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewModel(
+fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewModel(
     factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val repository = MockAuthRepository() // <-- Здесь наша заглушка
             val useCase = AuthUseCase(repository)
-            return AuthViewModel(useCase) as T
+            return EnterViewModel(useCase) as T
         }
     }
 )) {
@@ -288,7 +288,7 @@ fun EnterScreenPreview() {
     val repository = MockAuthRepository()
     val useCase = AuthUseCase(repository)
     @Suppress("ViewModelConstructorInComposable")
-    val viewModel = AuthViewModel(useCase)
+    val viewModel = EnterViewModel(useCase)
 
     // 3. Передаем их в экран
     EnterScreen(

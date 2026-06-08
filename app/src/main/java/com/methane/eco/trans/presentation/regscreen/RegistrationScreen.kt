@@ -1,4 +1,4 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.regscreen
 
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +30,10 @@ import androidx.compose.ui.text.TextStyle
 import android.util.Patterns
 import androidx.compose.foundation.layout.offset
 import android.util.Log
+import com.methane.eco.trans.RegisterActivity
+import com.methane.eco.trans.saveUserData
+import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
