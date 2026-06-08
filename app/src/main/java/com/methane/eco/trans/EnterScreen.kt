@@ -1,7 +1,7 @@
 package com.methane.eco.trans
 
-
-import android.util.Patterns
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.style.TextAlign
@@ -20,14 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.focus.onFocusChanged
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarDuration
-import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.methane.eco.trans.data.repository.MockAuthRepository
+import com.methane.eco.trans.domain.usecase.AuthUseCase
 import com.methane.eco.trans.presentation.sealedclass.EnterScreenEvent
 import com.methane.eco.trans.presentation.viewmodel.AuthViewModel
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
@@ -36,16 +36,29 @@ import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 
+
 @Composable
-fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewModel()) {
+fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewModel(
+    factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val repository = MockAuthRepository() // <-- Здесь наша заглушка
+            val useCase = AuthUseCase(repository)
+            return AuthViewModel(useCase) as T
+        }
+    }
+)) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
+
         viewModel.events.collect { event ->
             when (event) {
-                is EnterScreenEvent.ShowSnackbar -> { /* показать снекбар */ }
-                is EnterScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") }
+                is EnterScreenEvent.ShowSnackbar -> {snackbarHostState.showSnackbar(event.message)}
+                is EnterScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") {
+                    popUpTo("EnterScreen") {inclusive = true}
+                } }
                 is EnterScreenEvent.NavigateToRegistrationScreen -> { navController.navigate("RegistrationScreen") }
             }
         }
@@ -57,68 +70,13 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
             .background(CustomTurquoiseBlue)
     ) {
 
-        //корутина, экземпляр furebaseAuthentification и состояние для снекбара (вспылвашек)
-        val auth = Firebase.auth
-        val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
-
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
 
         //отслеживание состояний
-        var password by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
         var isFocusedEmail by remember { mutableStateOf(false) }
         var isFocusedPassword by remember { mutableStateOf(false) }
-        var isLoading by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-
-        // Состояния ошибок
-        var emailError by remember { mutableStateOf(false) }
-        var emptyFieldsError by remember { mutableStateOf(false) }
-
-        // добавляем функцию, проверяющую корректность email
-        fun isEmailValid(email: String): Boolean {
-            return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        }
-
-        fun onEnterClick(){
-            //проверяем ошибки
-            emailError = !isEmailValid(email)
-            emptyFieldsError = email.isEmpty() || password.isEmpty()
-
-            if (!emailError && !emptyFieldsError){
-                signInUser(
-                    auth = auth,
-                    email = email,
-                    password = password,
-                    navController = navController,
-                    snackbarHostState = snackbarHostState,
-                    coroutineScope = coroutineScope
-                )
-            } else {
-                if (emailError && !emptyFieldsError) {
-                    isLoading = false
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            "Неверный формат email",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-                if (!emailError && emptyFieldsError) {
-                    isLoading = false
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            "Необходимо заполнить все поля",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-            }
-        }
-
         Box(
             modifier = Modifier
                 .requiredSize(boxWidth, boxHeight)
@@ -149,7 +107,7 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
                 //плейсхолдер
-                if(email.isEmpty() && !isFocusedEmail){
+                if(uiState.email.isEmpty() && !isFocusedEmail){
                     Text(
                         text = "e-mail",
                         modifier = Modifier
@@ -174,11 +132,11 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedEmail = focusState.isFocused },
-                    value = email,
+                    value = uiState.email,
                     onValueChange = { newText ->
                         // Ограничиваем длину пароля до 14 символов
                         if (newText.length <= 24) {
-                            email = newText
+                            viewModel.onEmailChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -205,7 +163,7 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp)),
             ){
                 // плейсхолдер
-                if (password.isEmpty() && !isFocusedPassword){
+                if (uiState.password.isEmpty() && !isFocusedPassword){
                     Text(
                         text = "пароль",
                         modifier = Modifier
@@ -232,11 +190,11 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedPassword = focusState.isFocused },
-                    value = password,
+                    value = uiState.password,
                     onValueChange = { newText ->
                         // Ограничиваем длину пароля до 14 символов
                         if (newText.length <= 24) {
-                            password = newText
+                            viewModel.onPasswordChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -263,15 +221,12 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
 
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable(){
-                        if (!isLoading){
-                            isLoading = true
-                            onEnterClick()
-                            isLoading = false
-                        }
+                    .clickable{
+                        if (!uiState.isLoading){
+                            viewModel.onEnterClicked() }
                     }
             ) {
-                if (isLoading) {
+                if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -306,7 +261,7 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
                     text = "Регистрация",
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .clickable { navController.navigate("RegistrationScreen") },
+                        .clickable { viewModel.onRegistrationClicked() },
                     color = CustomTrafficWhite,
                     fontFamily = segoe_ui,
                     fontSize = 18.sp
@@ -319,4 +274,23 @@ fun EnterScreen(navController: NavController, viewModel: AuthViewModel = viewMod
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
+}
+
+@Preview(showBackground = true, name = "EnterScreenPreview")
+@Composable
+fun EnterScreenPreview() {
+    // 1. Создаем тестовый NavController
+    val navController = rememberNavController()
+
+    // 2. Создаем зависимости вручную (без Hilt/Factory)
+    val repository = MockAuthRepository()
+    val useCase = AuthUseCase(repository)
+    @Suppress("ViewModelConstructorInComposable")
+    val viewModel = AuthViewModel(useCase)
+
+    // 3. Передаем их в экран
+    EnterScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
 }
