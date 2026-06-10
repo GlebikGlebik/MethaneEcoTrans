@@ -9,5 +9,6 @@ data class RegScreenUIState (
     val password: String = "",
     val email: String = "",
     val name: String = "",
-    val surname: String = ""
+    val surname: String = "",
+    val isLoading: Boolean = false
 )

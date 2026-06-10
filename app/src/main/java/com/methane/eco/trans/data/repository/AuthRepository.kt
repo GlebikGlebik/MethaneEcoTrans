@@ -1,23 +1,23 @@
 package com.methane.eco.trans.data.repository
 
-import com.methane.eco.trans.domain.model.EnterResult
+import com.methane.eco.trans.domain.model.AuthResult
 import kotlinx.coroutines.delay
 
 // Контракт
 interface AuthRepository {
-    suspend fun signIn(email: String, password: String): EnterResult
+    suspend fun signIn(email: String, password: String): AuthResult
 }
 
 // Mock
 class MockAuthRepository : AuthRepository {
-    override suspend fun signIn(email: String, password: String): EnterResult {
+    override suspend fun signIn(email: String, password: String): AuthResult {
         // Имитируем задержку сети
         delay(1500)
 
         return if (email == "test@test.com" && password == "123456") {
-            EnterResult.Success
+            AuthResult.Success
         } else {
-            EnterResult.Error("Неверный email или пароль. (Для теста: test@test.com / 123456)")
+            AuthResult.Error("Неверный email или пароль.")
         }
     }
 }

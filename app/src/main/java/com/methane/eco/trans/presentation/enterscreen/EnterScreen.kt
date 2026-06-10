@@ -54,7 +54,6 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-
         viewModel.events.collect { event ->
             when (event) {
                 is EnterScreenEvent.ShowSnackbar -> {snackbarHostState.showSnackbar(event.message)}
