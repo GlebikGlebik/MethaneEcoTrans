@@ -2,13 +2,13 @@ package com.methane.eco.trans.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.methane.eco.trans.domain.model.AuthResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import com.methane.eco.trans.domain.model.EnterResult
 import com.methane.eco.trans.domain.usecase.AuthUseCase
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenUiState
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenEvent
@@ -50,15 +50,12 @@ class EnterViewModel(
             // показываем загрузку
             onIsLoadingChanged(true)
 
-            // вызываем useCase
-            val result = authUseCase(currentState.email, currentState.password)
-
-            // обработка результата
-            when (result) {
-                is EnterResult.Success -> {
+            // вызываем useCase и обрабатываем результат
+            when (val result = authUseCase(currentState.email, currentState.password)) {
+                is AuthResult.Success -> {
                     _events.send(EnterScreenEvent.NavigateToMainScreen)
                 }
-                is EnterResult.Error -> {
+                is AuthResult.Error -> {
                     _events.send(EnterScreenEvent.ShowSnackbar(result.message))
                 }
             }
