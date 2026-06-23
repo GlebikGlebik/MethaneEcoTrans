@@ -1,4 +1,4 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.mainscreen
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -49,6 +49,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.database.FirebaseDatabase
+import com.methane.eco.trans.R
+import com.methane.eco.trans.isDateValid
+import com.methane.eco.trans.segoe_ui
 import kotlinx.coroutines.tasks.await
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
@@ -59,7 +62,7 @@ import com.methane.eco.trans.theme.CustomGrey
 
 @Composable
 fun MainScreen(navController: NavController){
-    // отследиванием состояние высплывающего окна
+    // отсле;иванием состояние высплывающего окна
     var showRefuelDialog by remember { mutableStateOf(false) }
 
     // штуки для уведомлений
@@ -74,12 +77,12 @@ fun MainScreen(navController: NavController){
     val vehiclesRef = database.getReference("users").child(user?.uid.toString()).child("vehicles")
 
     // Отслеживание состояний
-    var date by remember { mutableStateOf("") }
-    var volume by remember { mutableStateOf("") }
-    var sum by remember { mutableStateOf("") }
-    var userVehicles by remember { mutableStateOf<List<String>>(emptyList()) }
-    var newVehicle by remember { mutableStateOf("") }
-    var currentVehicle by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") } //in_ui_state
+    var volume by remember { mutableStateOf("") } //in_ui_state
+    var sum by remember { mutableStateOf("") } //in_ui_state
+    var userVehicles by remember { mutableStateOf<List<String>>(emptyList()) } //in_ui_state
+    var newVehicle by remember { mutableStateOf("") } //in_ui_state
+    var currentVehicle by remember { mutableStateOf("") } //in_ui_state
 
     // Состояния для фокуса
     var isFocusedDate by remember { mutableStateOf(false) }
@@ -913,7 +916,7 @@ fun MainScreen(navController: NavController){
                 }
             }
         }
-        androidx.compose.material3.SnackbarHost(
+        SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.TopCenter) // Или TopCenter, если нужно сверху
         )
