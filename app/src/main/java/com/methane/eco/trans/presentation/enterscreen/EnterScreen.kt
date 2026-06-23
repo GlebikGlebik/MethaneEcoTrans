@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.methane.eco.trans.data.repository.MockAuthRepository
 import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
 import com.methane.eco.trans.presentation.viewmodel.EnterViewModel
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
@@ -45,7 +46,8 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val repository = MockAuthRepository() // <-- Здесь наша заглушка
             val useCase = AuthUseCase(repository)
-            return EnterViewModel(useCase) as T
+            val validationUseCase = ValidationUseCase()
+            return EnterViewModel(useCase, validationUseCase) as T
         }
     }
 )) {
@@ -288,8 +290,9 @@ fun EnterScreenPreview() {
     // 2. Создаем зависимости вручную (без Hilt/Factory)
     val repository = MockAuthRepository()
     val useCase = AuthUseCase(repository)
+    val validationUseCase = ValidationUseCase()
     @Suppress("ViewModelConstructorInComposable")
-    val viewModel = EnterViewModel(useCase)
+    val viewModel = EnterViewModel(useCase, validationUseCase)
 
     // 3. Передаем их в экран
     EnterScreen(

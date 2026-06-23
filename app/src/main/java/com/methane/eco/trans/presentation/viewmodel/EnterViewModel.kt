@@ -10,13 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
+
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenUiState
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenEvent
 
 class EnterViewModel(
-    private val authUseCase: AuthUseCase
+    private val authUseCase: AuthUseCase,
+    private val validationUseCase: ValidationUseCase
 ): ViewModel() {
-
     private val _uiState = MutableStateFlow(EnterScreenUiState())
     val uiState: StateFlow<EnterScreenUiState> = _uiState.asStateFlow()
     private val _events = Channel<EnterScreenEvent>()
@@ -50,8 +52,18 @@ class EnterViewModel(
             // показываем загрузку
             onIsLoadingChanged(true)
 
-            // вызываем useCase и обрабатываем результат
-            when (val result = authUseCase(currentState.email, currentState.password)) {
+            val result: AuthResult
+            // проверяем валидацию
+            val validationResult = validationUseCase.validateLoginData(currentState.email, currentState.password)
+
+            result = if (validationResult == AuthResult.Success){
+                //вызываем useCase
+                authUseCase(currentState.email, currentState.password)
+            } else {
+                validationResult
+            }
+
+            when (result) {
                 is AuthResult.Success -> {
                     _events.send(EnterScreenEvent.NavigateToMainScreen)
                 }
