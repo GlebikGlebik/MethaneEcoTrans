@@ -20,44 +20,47 @@ class EnterViewModel(
 ): ViewModel() {
     private val _uiState = MutableStateFlow(EnterScreenUiState())
     val uiState: StateFlow<EnterScreenUiState> = _uiState.asStateFlow()
+
     private val _events = Channel<EnterScreenEvent>()
     val events = _events.receiveAsFlow()
 
     fun onEmailChanged(newEmail: String) {
-        _uiState.value = _uiState.value.copy(
-            email = newEmail,
-            emailError = null
-        )
+        _uiState.value = _uiState.value.copy(email = newEmail, emailError = null)
     }
 
     fun onPasswordChanged(newPassword: String) {
-        _uiState.value = _uiState.value.copy(
-            password = newPassword,
-            passwordError = null
-        )
+        _uiState.value = _uiState.value.copy(password = newPassword, passwordError = null)
+    }
+
+    fun onCompanyInnChanged(newInn: String) {
+        _uiState.value = _uiState.value.copy(companyInn = newInn)
+    }
+
+    fun onUserTypeChanged(newType: String) {
+        _uiState.value = _uiState.value.copy(isB2B = newType == "B2B")
     }
 
     fun onIsLoadingChanged(newIsLoading: Boolean) {
-        _uiState.value = _uiState.value.copy(
-            isLoading = newIsLoading
-        )
+        _uiState.value = _uiState.value.copy(isLoading = newIsLoading)
     }
-
 
     fun onEnterClicked() {
         val currentState = _uiState.value
-
         viewModelScope.launch {
-            // показываем загрузку
             onIsLoadingChanged(true)
-
             val result: AuthResult
-            // проверяем валидацию
-            val validationResult = validationUseCase.validateLoginData(currentState.email, currentState.password)
+
+            val validationResult = validationUseCase.validateLoginData(
+                currentState.email,
+                currentState.password
+            )
 
             result = if (validationResult == AuthResult.Success){
-                //вызываем useCase
-                authUseCase(currentState.email, currentState.password)
+                authUseCase(
+                    currentState.email,
+                    currentState.password,
+                    if (currentState.isB2B) currentState.companyInn else null
+                )
             } else {
                 validationResult
             }
@@ -75,7 +78,6 @@ class EnterViewModel(
     }
 
     fun onRegistrationClicked() {
-        // Отправляем событие навигации
         viewModelScope.launch {
             _events.send(EnterScreenEvent.NavigateToRegistrationScreen)
         }

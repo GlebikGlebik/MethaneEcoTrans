@@ -7,18 +7,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,6 +48,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.methane.eco.trans.R
+import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
@@ -63,6 +74,7 @@ import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomDeepOrange
 import com.methane.eco.trans.theme.CustomEnterBarColor
+import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
@@ -126,12 +138,6 @@ fun MainScreen(
         val boxWidth = this.maxWidth
         val boxHeight = this.maxHeight
 
-        // Состояния для фокуса
-        var isFocusedDate by remember { mutableStateOf(false) }
-        var isFocusedVolume by remember { mutableStateOf(false) }
-        var isFocusedSum by remember { mutableStateOf(false) }
-        var isFocusedNewVehicle by remember { mutableStateOf(false) }
-
         // Кнопка добавить заправку
         Box(
             modifier = Modifier
@@ -168,340 +174,195 @@ fun MainScreen(
                     dismissOnClickOutside = true
                 )
             ) {
-                BoxWithConstraints(
+                Column(
                     modifier = Modifier
-                        .background(
-                            color = CustomTrafficWhite,
-                            shape = RoundedCornerShape(15.dp)
-                        )
+                        .width(320.dp)
+                        .background(CustomTrafficWhite, RoundedCornerShape(15.dp))
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    val dialogWidth = this.maxWidth * 0.5f
-                    val dialogHeight = this.maxHeight * 0.5f
+                    // БЛОК 1: ДОБАВЛЕНИЕ ЗАПРАВКИ
+                    Text(
+                        text = "Новая заправка",
+                        color = CustomCarpiBlue,
+                        fontFamily = segoe_ui,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
 
+                    // Выбор автомобиля
+                    VehicleDropdown(
+                        vehicles = uiState.userVehicles,
+                        selectedId = uiState.currentVehicleId,
+                        onSelected = { viewModel.onCurrentVehicleIdChanged(it) }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Дата и Объем
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DialogTextField(
+                            value = uiState.date,
+                            onValueChange = { viewModel.onDateChanged(it) },
+                            placeholder = "дд.мм.гггг",
+                            modifier = Modifier.weight(1f)
+                        )
+                        DialogTextField(
+                            value = uiState.volume,
+                            onValueChange = { viewModel.onVolumeChanged(it) },
+                            placeholder = "Объем (л)",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Сумма и Топливная карта
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DialogTextField(
+                            value = uiState.sum,
+                            onValueChange = { viewModel.onSumChanged(it) },
+                            placeholder = "Сумма (₽)",
+                            modifier = Modifier.weight(1f)
+                        )
+                        DialogTextField(
+                            value = uiState.fuelCardNumber,
+                            onValueChange = { viewModel.onFuelCardChanged(it) },
+                            placeholder = "№ Карты (опц.)",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Кнопка сохранения заправки
+                    DialogButton(
+                        text = "Добавить заправку",
+                        isLoading = uiState.isLoading,
+                        onClick = {
+                            if (uiState.date.isBlank() || uiState.volume.isBlank() || uiState.sum.isBlank()) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Заполните обязательные поля")
+                                }
+                                return@DialogButton
+                            }
+                            if (!isDateValid(uiState.date)) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Некорректный формат даты")
+                                }
+                                return@DialogButton
+                            }
+                            if (uiState.currentVehicleId.isBlank()) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Выберите автомобиль")
+                                }
+                                return@DialogButton
+                            }
+                            val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                            val localDate = LocalDate.parse(uiState.date, dateFormatter)
+                            val isoDate = localDate.atStartOfDay().toString()  // "2026-06-25T00:00:00"
+
+                            viewModel.addRefueling()
+                        }
+                    )
+
+                    // Разделитель
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        thickness = 1.dp,
+                        color = CustomGrey.copy(alpha = 0.2f)
+                    )
+
+                    // БЛОК 2: УПРАВЛЕНИЕ АВТОПАРКОМ
+                    Text(
+                        text = "Мои автомобили",
+                        color = CustomCarpiBlue,
+                        fontFamily = segoe_ui,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Поле ввода и кнопки +/-
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        DialogTextField(
+                            value = uiState.newVehiclePlate,
+                            onValueChange = { viewModel.onNewVehiclePlateChanged(it) },
+                            placeholder = "Номер авто",
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // Кнопка +
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CustomCarpiBlue, RoundedCornerShape(8.dp))
+                                .clickable { viewModel.addNewVehicle() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "＋",
+                                color = CustomTrafficWhite,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Кнопка -
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CustomErrorBarBackgroundColor, RoundedCornerShape(8.dp))
+                                .clickable { viewModel.deleteVehicleByPlate() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "－",
+                                color = CustomTrafficWhite,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Список автомобилей
                     Box(
                         modifier = Modifier
-                            .requiredSize(dialogWidth, dialogHeight)
-                            .background(CustomTrafficWhite)
+                            .fillMaxWidth()
+                            .heightIn(max = 150.dp)
+                            .background(CustomEnterBarColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                     ) {
-                        // Поле выбора авто
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = dialogHeight / 21 * 1,
-                                    start = dialogWidth / 11 * 3,
-                                    end = dialogWidth / 11 * 3,
-                                    bottom = dialogHeight / 21 * 9
-                                )
-                        ) {
-                            var expanded by remember { mutableStateOf(false) }
-                            val focusManager = LocalFocusManager.current
-
-                            Box(
+                        if (uiState.userVehicles.isEmpty()) {
+                            Text(
+                                text = "Список пуст",
                                 modifier = Modifier
-                                    .background(CustomTurquoiseBlue, shape = RoundedCornerShape(15.dp))
-                                    .requiredSize(dialogWidth / 11 * 5, dialogHeight / 21 * 1)
-                                    .clickable {
-                                        focusManager.clearFocus()
-                                        expanded = true
-                                    }
-                            ) {
-                                Text(
-                                    text = uiState.currentVehicle.ifEmpty { "Номер авто ≡" },
-                                    modifier = Modifier.align(Alignment.Center),
-                                    color = CustomTrafficWhite,
-                                    fontFamily = segoe_ui,
-                                    fontSize = 12.sp
-                                )
-
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier
-                                        .width(dialogWidth / 11 * 5)
-                                        .background(CustomTurquoiseBlue)
-                                ) {
-                                    if (uiState.userVehicles.isEmpty()) {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    "Добавьте автомобиль",
-                                                    color = CustomTrafficWhite
-                                                )
-                                            },
-                                            onClick = { expanded = false }
-                                        )
-                                    } else {
-                                        uiState.userVehicles.forEach { vehicle ->
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        vehicle.licensePlate ?: vehicle.name,
-                                                        color = CustomTrafficWhite
-                                                    )
-                                                },
-                                                onClick = {
-                                                    viewModel.onCurrentVehicleChanged(vehicle.vehicleId)
-                                                    expanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Поле ввода даты
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = dialogHeight / 21 * 3,
-                                    start = dialogWidth / 11 * 1,
-                                    end = dialogWidth / 11 * 1,
-                                    bottom = dialogHeight / 21 * 7
-                                )
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(dialogWidth / 11 * 9, dialogHeight / 21 * 1)
-                                    .background(CustomEnterBarColor, shape = RoundedCornerShape(15.dp))
-                            ) {
-                                BasicTextField(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .align(Alignment.Center)
-                                        .onFocusChanged { focusState -> isFocusedDate = focusState.isFocused },
-                                    value = uiState.date,
-                                    onValueChange = { newText ->
-                                        if (newText.length <= 10) {
-                                            viewModel.onDateChanged(newText)
-                                        }
-                                    },
-                                    textStyle = TextStyle(
-                                        color = CustomGrey,
-                                        fontSize = 12.sp,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    cursorBrush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            CustomGrey.copy(alpha = 0.5f),
-                                            CustomGrey.copy(alpha = 0.5f)
-                                        ),
-                                        startY = 0f,
-                                        endY = 12f
-                                    ),
-                                    decorationBox = { innerTextField ->
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (uiState.date.isEmpty() && !isFocusedDate) {
-                                                Text(
-                                                    text = "дата: xx.xx.xxxx",
-                                                    modifier = Modifier.alpha(0.5f),
-                                                    color = CustomGrey,
-                                                    fontFamily = segoe_ui,
-                                                    fontSize = 12.sp,
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
-                                            innerTextField()
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        // Поле ввода объема
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = dialogHeight / 21 * 5,
-                                    start = dialogWidth / 11 * 1,
-                                    end = dialogWidth / 11 * 1,
-                                    bottom = dialogHeight / 21 * 5
-                                )
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(dialogWidth / 11 * 9, dialogHeight / 21 * 1)
-                                    .background(CustomEnterBarColor, shape = RoundedCornerShape(15.dp))
-                            ) {
-                                BasicTextField(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .align(Alignment.Center)
-                                        .onFocusChanged { focusState -> isFocusedVolume = focusState.isFocused },
-                                    value = uiState.volume,
-                                    onValueChange = { newText ->
-                                        if (newText.length <= 10) {
-                                            viewModel.onVolumeChanged(newText)
-                                        }
-                                    },
-                                    textStyle = TextStyle(
-                                        color = CustomGrey,
-                                        fontSize = 12.sp,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    cursorBrush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            CustomGrey.copy(alpha = 0.5f),
-                                            CustomGrey.copy(alpha = 0.5f)
-                                        ),
-                                        startY = 0f,
-                                        endY = 12f
-                                    ),
-                                    decorationBox = { innerTextField ->
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (uiState.volume.isEmpty() && !isFocusedVolume) {
-                                                Text(
-                                                    text = "объем",
-                                                    modifier = Modifier.alpha(0.5f),
-                                                    color = CustomGrey,
-                                                    fontFamily = segoe_ui,
-                                                    fontSize = 12.sp,
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
-                                            innerTextField()
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        // Поле ввода суммы
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = dialogHeight / 21 * 7,
-                                    start = dialogWidth / 11 * 1,
-                                    end = dialogWidth / 11 * 1,
-                                    bottom = dialogHeight / 21 * 3
-                                )
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(dialogWidth / 11 * 9, dialogHeight / 21 * 1)
-                                    .background(CustomEnterBarColor, shape = RoundedCornerShape(15.dp))
-                            ) {
-                                BasicTextField(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .align(Alignment.Center)
-                                        .onFocusChanged { focusState -> isFocusedSum = focusState.isFocused },
-                                    value = uiState.sum,
-                                    onValueChange = { newText ->
-                                        if (newText.length <= 10) {
-                                            viewModel.onSumChanged(newText)
-                                        }
-                                    },
-                                    textStyle = TextStyle(
-                                        color = CustomGrey,
-                                        fontSize = 12.sp,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    cursorBrush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            CustomGrey.copy(alpha = 0.5f),
-                                            CustomGrey.copy(alpha = 0.5f)
-                                        ),
-                                        startY = 0f,
-                                        endY = 12f
-                                    ),
-                                    decorationBox = { innerTextField ->
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (uiState.sum.isEmpty() && !isFocusedSum) {
-                                                Text(
-                                                    text = "сумма",
-                                                    modifier = Modifier.alpha(0.5f),
-                                                    color = CustomGrey,
-                                                    fontFamily = segoe_ui,
-                                                    fontSize = 12.sp,
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
-                                            innerTextField()
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        // Кнопка добавить заправку
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = dialogHeight / 21 * 9 - 4.dp,
-                                    start = dialogWidth / 11 * 1,
-                                    end = dialogWidth / 11 * 1,
-                                    bottom = dialogHeight / 21 * 1 + 4.dp
-                                )
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(dialogWidth / 11 * 9, dialogHeight / 21 * 1)
-                                    .background(CustomCarpiBlue, shape = RoundedCornerShape(15.dp))
-                                    .clickable {
-                                        // Валидация и отправка
-                                        if (uiState.date.isBlank() || uiState.volume.isBlank() || uiState.sum.isBlank()) {
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar("Заполните все поля")
-                                            }
-                                            return@clickable
-                                        }
-                                        if (!isDateValid(uiState.date)) {
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar("Некорректный формат даты")
-                                            }
-                                            return@clickable
-                                        }
-                                        if (uiState.currentVehicle.isBlank()) {
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar("Выберите ТС")
-                                            }
-                                            return@clickable
-                                        }
-
-                                        // Преобразование даты в ISO формат
-                                        val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-                                        val localDate = LocalDate.parse(uiState.date, dateFormatter)
-                                        val isoDate = localDate.atStartOfDay().toString()
-
-                                        viewModel.addRefueling(
-                                            vehicleId = uiState.currentVehicle,
-                                            volume = uiState.volume.toDoubleOrNull() ?: 0.0,
-                                            totalSum = uiState.sum.toDoubleOrNull() ?: 0.0,
-                                            refuelDate = isoDate
-                                        )
-                                        viewModel.onShowRefuelDialogChanged(false)
-                                    }
-                            ) {
-                                if (uiState.isLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .size(12.dp),
-                                        color = CustomTrafficWhite,
-                                        strokeWidth = 2.dp
-                                    )
-                                } else {
+                                    .align(Alignment.Center)
+                                    .padding(8.dp),
+                                color = CustomGrey.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                        } else {
+                            LazyColumn(modifier = Modifier.padding(8.dp)) {
+                                items(uiState.userVehicles) { vehicle ->
                                     Text(
-                                        text = "Добавить заправку",
-                                        modifier = Modifier.align(Alignment.Center),
-                                        color = CustomTrafficWhite,
-                                        fontFamily = segoe_ui,
-                                        fontSize = 12.sp
+                                        text = vehicle.licensePlate ?: vehicle.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
+                                            .clickable {
+                                                viewModel.onCurrentVehicleIdChanged(vehicle.vehicleId)
+                                            },
+                                        color = if (vehicle.vehicleId == uiState.currentVehicleId)
+                                            CustomCarpiBlue else CustomGrey,
+                                        fontWeight = if (vehicle.vehicleId == uiState.currentVehicleId)
+                                            FontWeight.Bold else FontWeight.Normal,
+                                        fontSize = 14.sp
                                     )
                                 }
                             }
@@ -547,8 +408,7 @@ fun MainScreen(
                             R.drawable.vector_profile to "profile"
                         ).forEach { (iconRes, description) ->
                             Box(
-                                modifier = Modifier
-                                    .size(24.dp),
+                                modifier = Modifier.size(24.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -575,5 +435,146 @@ fun MainScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
+    }
+}
+
+// --- Вспомогательные компоненты для Диалога ---
+
+@Composable
+fun DialogTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier
+) {
+    var isFocused by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier
+            .height(40.dp)
+            .background(CustomEnterBarColor, RoundedCornerShape(8.dp))
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .onFocusChanged { focusState -> isFocused = focusState.isFocused },
+            textStyle = TextStyle(
+                color = CustomGrey,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            ),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (value.isEmpty() && !isFocused) {
+                        Text(
+                            placeholder,
+                            color = CustomGrey.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            fontFamily = segoe_ui
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun DialogButton(
+    text: String,
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(CustomCarpiBlue, RoundedCornerShape(8.dp))
+            .clickable(enabled = !isLoading, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = CustomTrafficWhite,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(
+                text,
+                color = CustomTrafficWhite,
+                fontFamily = segoe_ui,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun VehicleDropdown(
+    vehicles: List<VehicleDto>,
+    selectedId: String,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val selectedName = vehicles.find { it.vehicleId == selectedId }?.let {
+        it.licensePlate ?: it.name
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(CustomTurquoiseBlue, RoundedCornerShape(8.dp))
+            .clickable {
+                focusManager.clearFocus()
+                expanded = true
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = selectedName ?: "Выберите автомобиль ",
+            color = CustomTrafficWhite,
+            fontFamily = segoe_ui,
+            fontSize = 14.sp
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(CustomTurquoiseBlue)
+        ) {
+            if (vehicles.isEmpty()) {
+                DropdownMenuItem(
+                    text = { Text("Нет авто", color = CustomTrafficWhite) },
+                    onClick = { expanded = false }
+                )
+            } else {
+                vehicles.forEach { v ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                v.licensePlate ?: v.name,
+                                color = CustomTrafficWhite
+                            )
+                        },
+                        onClick = {
+                            onSelected(v.vehicleId)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
     }
 }
