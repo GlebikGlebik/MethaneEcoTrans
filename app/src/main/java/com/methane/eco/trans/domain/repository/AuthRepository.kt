@@ -2,14 +2,19 @@ package com.methane.eco.trans.domain.repository
 
 import com.methane.eco.trans.domain.model.AuthResult
 
-// Контракт
 interface AuthRepository {
-    suspend fun signIn(email: String, password: String): AuthResult
+    suspend fun signIn(
+        email: String,
+        password: String,
+        companyInn: String? = null
+    ): AuthResult
     suspend fun register(
         email: String,
         password: String,
         firstName: String,
         lastName: String,
-        phone: String?
+        phone: String?,
+        userType: String = "B2C", // ✅ НОВОЕ
+        companyInn: String? = null // ✅ НОВОЕ
     ): AuthResult
 }

@@ -6,9 +6,10 @@ data class MainScreenUIState(
     val date: String = "",
     val volume: String = "",
     val sum: String = "",
+    val fuelCardNumber: String = "",
     val userVehicles: List<VehicleDto> = emptyList(),
-    val newVehicle: String = "",
-    val currentVehicle: String = "",
+    val newVehiclePlate: String = "",
+    val currentVehicleId: String = "",
     val showRefuelDialog: Boolean = false,
     val isLoading: Boolean = false
 )

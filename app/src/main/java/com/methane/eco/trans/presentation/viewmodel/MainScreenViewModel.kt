@@ -2,7 +2,6 @@ package com.methane.eco.trans.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.methane.eco.trans.data.dto.RefuelingDto
 import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
@@ -32,51 +31,47 @@ class MainScreenViewModel(
     private val _events = Channel<MainScreenEvent>()
     val events = _events.receiveAsFlow()
 
+    // ⚠️ MOCK ДАННЫЕ ДЛЯ СЕРВЕРА (Замените на реальные ID из БД, когда добавите выбор АЗС)
+    private val MOCK_GAS_STATION_ID = "00000000-0000-0000-0000-000000000001"
+    private val MOCK_FUEL_TYPE_ID = "f3a901de-93de-422e-9efb-855aec3a6cae"
+
     init {
         loadVehicles()
     }
 
-    // Сеттеры
-    fun onDateChanged(newDate: String){
-        _uiState.value = _uiState.value.copy(
-            date = newDate
-        )
+    // --- Сеттеры для UI ---
+    fun onDateChanged(newDate: String) {
+        _uiState.value = _uiState.value.copy(date = newDate)
     }
 
-    fun onVolumeChanged(newVolume: String){
-        _uiState.value = _uiState.value.copy(
-            volume = newVolume
-        )
+    fun onVolumeChanged(newVolume: String) {
+        _uiState.value = _uiState.value.copy(volume = newVolume)
     }
 
-    fun onSumChanged(newSum: String){
-        _uiState.value = _uiState.value.copy(
-            sum = newSum
-        )
+    fun onSumChanged(newSum: String) {
+        _uiState.value = _uiState.value.copy(sum = newSum)
     }
 
-    fun onUserVehiclesChanged(newUserVehicles: List<VehicleDto>){
-        _uiState.value = _uiState.value.copy(
-            userVehicles = newUserVehicles
-        )
+    fun onFuelCardChanged(number: String) {
+        _uiState.value = _uiState.value.copy(fuelCardNumber = number)
     }
 
-    fun onNewVehicleChanged(newVehicle: String) {
-        _uiState.value = _uiState.value.copy(
-            newVehicle = newVehicle)
+    fun onCurrentVehicleIdChanged(id: String) {
+        _uiState.value = _uiState.value.copy(currentVehicleId = id)
     }
 
-    fun onCurrentVehicleChanged(newCurrentVehicle: String) {
-        _uiState.value = _uiState.value.copy(
-            currentVehicle = newCurrentVehicle)
+    fun onShowRefuelDialogChanged(show: Boolean) {
+        _uiState.value = _uiState.value.copy(showRefuelDialog = show)
     }
 
-    fun onShowRefuelDialogChanged(newShowRefuelDialog: Boolean ){
-        _uiState.value = _uiState.value.copy(
-            showRefuelDialog = newShowRefuelDialog
-        )
+    // ✅ НОВОЕ: Сеттер для ввода номера нового авто
+    fun onNewVehiclePlateChanged(plate: String) {
+        if (plate.length <= 15) {
+            _uiState.value = _uiState.value.copy(newVehiclePlate = plate)
+        }
     }
 
+    // --- Навигация ---
     fun onProfileClicked() {
         viewModelScope.launch {
             _events.send(MainScreenEvent.NavigateToProfileScreen)
@@ -89,12 +84,10 @@ class MainScreenViewModel(
         }
     }
 
-
-    // Загрузка списка ТС
+    // --- Загрузка ТС ---
     fun loadVehicles() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-
             getVehiclesUseCase().fold(
                 onSuccess = { vehicles ->
                     _uiState.value = _uiState.value.copy(
@@ -110,26 +103,38 @@ class MainScreenViewModel(
         }
     }
 
-    // Добавление ТС
-    fun addVehicle(
-        name: String,
-        licensePlate: String?,
-        vinNumber: String,
-        model: String,
-        year: Int?,
-        mileage: Double?
-    ) {
+    // ✅ НОВОЕ: Быстрое добавление ТС (с генерацией Mock VIN для обхода валидации сервера)
+    fun addNewVehicle() {
+        val plate = _uiState.value.newVehiclePlate
+        if (plate.isBlank()) {
+            viewModelScope.launch {
+                _events.send(MainScreenEvent.ShowSnackbar("Введите номер авто"))
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            addVehicleUseCase(name, licensePlate, vinNumber, model, year, mileage).fold(
+            // Генерируем 17-значный VIN, чтобы сервер не выдал ошибку
+            // Формат: MCK + номер (до 14 символов, дополненный X)
+            val mockVin = "MCK${plate.padEnd(14, 'X').take(14)}"
+
+            addVehicleUseCase(
+                name = plate,
+                licensePlate = plate,
+                vinNumber = mockVin,
+                model = "Unknown",
+                year = null,
+                mileage = null
+            ).fold(
                 onSuccess = { message ->
                     _events.send(MainScreenEvent.ShowSnackbar(message))
-                    loadVehicles() // Перезагружаем список
                     _uiState.value = _uiState.value.copy(
-                        newVehicle = "",
+                        newVehiclePlate = "",
                         isLoading = false
                     )
+                    loadVehicles() // Перезагружаем список
                 },
                 onFailure = { error ->
                     _events.send(MainScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
@@ -139,16 +144,34 @@ class MainScreenViewModel(
         }
     }
 
-    // Удаление ТС
-    fun deleteVehicle(vehicleId: String) {
+    // ✅ НОВОЕ: Удаление ТС по введенному номеру
+    fun deleteVehicleByPlate() {
+        val plate = _uiState.value.newVehiclePlate
+        val vehicleToDelete = _uiState.value.userVehicles.find {
+            it.licensePlate == plate || it.name == plate
+        }
+
+        if (vehicleToDelete == null) {
+            viewModelScope.launch {
+                _events.send(MainScreenEvent.ShowSnackbar("Авто с таким номером не найдено"))
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-
-            deleteVehicleUseCase(vehicleId).fold(
+            deleteVehicleUseCase(vehicleToDelete.vehicleId).fold(
                 onSuccess = {
-                    _events.send(MainScreenEvent.ShowSnackbar("ТС удалено"))
+                    _events.send(MainScreenEvent.ShowSnackbar("Авто удалено"))
+                    _uiState.value = _uiState.value.copy(
+                        newVehiclePlate = "",
+                        isLoading = false
+                    )
+                    // Если удалили выбранное авто, сбрасываем выбор
+                    if (_uiState.value.currentVehicleId == vehicleToDelete.vehicleId) {
+                        _uiState.value = _uiState.value.copy(currentVehicleId = "")
+                    }
                     loadVehicles()
-                    _uiState.value = _uiState.value.copy(isLoading = false)
                 },
                 onFailure = { error ->
                     _events.send(MainScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
@@ -158,30 +181,21 @@ class MainScreenViewModel(
         }
     }
 
-    // Добавление заправки
-    fun addRefueling(
-        vehicleId: String,
-        volume: Double,
-        totalSum: Double,
-        refuelDate: String
-    ) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+    // --- Добавление заправки ---
+    fun addRefueling() {
+        val state = _uiState.value
 
-            // ⚠️ ВРЕМЕННЫЕ ЗАГЛУШКИ (MOCK)
-            // TODO: На следующем шаге мы добавим в UI выбор АЗС и Типа топлива,
-            // и будем брать реальные ID оттуда. Пока передаем пустые/тестовые UUID,
-            // чтобы код компилировался.
-            val mockGasStationId = "00000000-0000-0000-0000-000000000001"
-            val mockFuelTypeId = "00000000-0000-0000-0000-000000000001"
+        viewModelScope.launch {
+            _uiState.value = state.copy(isLoading = true)
 
             addRefuelingUseCase(
-                vehicleId = vehicleId,
-                gasStationId = mockGasStationId,
-                fuelTypeId = mockFuelTypeId,
-                volume = volume,
-                totalSum = totalSum,
-                refuelDate = refuelDate
+                vehicleId = state.currentVehicleId,
+                gasStationId = MOCK_GAS_STATION_ID,
+                fuelTypeId = MOCK_FUEL_TYPE_ID,
+                volume = state.volume.toDoubleOrNull() ?: 0.0,
+                totalSum = state.sum.toDoubleOrNull() ?: 0.0,
+                refuelDate = state.date, // Ожидается ISO формат
+                fuelCardId = state.fuelCardNumber.takeIf { it.isNotBlank() }
             ).fold(
                 onSuccess = { message ->
                     _events.send(MainScreenEvent.ShowSnackbar(message))
@@ -189,7 +203,9 @@ class MainScreenViewModel(
                         date = "",
                         volume = "",
                         sum = "",
-                        currentVehicle = "",
+                        fuelCardNumber = "",
+                        currentVehicleId = "",
+                        showRefuelDialog = false,
                         isLoading = false
                     )
                 },
