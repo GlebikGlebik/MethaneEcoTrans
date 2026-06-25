@@ -3,6 +3,7 @@ package com.methane.eco.trans.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.methane.eco.trans.domain.model.AuthResult
 import com.methane.eco.trans.domain.usecase.AuthUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,10 +12,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import com.methane.eco.trans.presentation.regscreen.RegScreenEvent
 import com.methane.eco.trans.presentation.regscreen.RegScreenUIState
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
 import kotlinx.coroutines.launch
 
 class RegViewModel(
-    private val authUseCase: AuthUseCase
+    private val authUseCase: AuthUseCase,
+    private val validationUseCase: ValidationUseCase
 ): ViewModel() {
     private val _uiState = MutableStateFlow(RegScreenUIState())
     val uiState: StateFlow<RegScreenUIState> = _uiState.asStateFlow()
@@ -46,15 +49,57 @@ class RegViewModel(
         )
     }
 
-    fun onIsLoadingChanged(NewIsLoading: Boolean) {
+    fun onIsLoadingChanged(newIsLoading: Boolean) {
         _uiState.value = _uiState.value.copy(
-            isLoading = NewIsLoading
+            isLoading = newIsLoading
         )
     }
 
     // Обработчик нажатия на кнопку регистрации
-    fun onRegisterClick(): Unit {
-        return
+    fun onRegisterClick() {
+        val currentState = _uiState.value
+
+        viewModelScope.launch {
+            // Показываем загрузку
+            onIsLoadingChanged(true)
+
+            try{
+                val result: AuthResult
+                val validationResult = validationUseCase.validateRegisterData(
+                    email = currentState.email,
+                    password = currentState.password,
+                    firstName = currentState.name,
+                    lastName = currentState.surname,
+                    phone = null // если потом будем спрашивать
+                )
+
+                result = if (validationResult == AuthResult.Success){
+                    //вызываем useCase
+                    authUseCase.regUseCase(
+                        email = currentState.email,
+                        password = currentState.password,
+                        firstName = currentState.name,
+                        lastName = currentState.surname,
+                        phone = null // если потом будем спрашивать
+                    )
+                } else {
+                    validationResult
+                }
+
+                when (result) {
+                    is AuthResult.Success -> {
+                        _events.send(RegScreenEvent.NavigateToMainScreen)
+                    }
+                    is AuthResult.Error -> {
+                        _events.send(RegScreenEvent.ShowSnackbar(result.message))
+                    }
+                }
+            } catch (e: Exception) {
+                _events.send(RegScreenEvent.ShowSnackbar("Ошибка: ${e.message}"))
+            } finally {
+                onIsLoadingChanged(false)
+            }
+        }
     }
 
     fun onEnterClicked() {

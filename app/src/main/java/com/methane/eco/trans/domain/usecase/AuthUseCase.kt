@@ -10,4 +10,20 @@ class AuthUseCase (private val _authRepository: AuthRepository) {
         //делегируем работу с данными Репозиторию
         return _authRepository.signIn(email, password)
     }
+
+    suspend fun regUseCase(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        phone: String?
+    ): AuthResult {
+        return _authRepository.register(
+            email,
+            password,
+            firstName,
+            lastName,
+            phone
+        )
+    }
 }
