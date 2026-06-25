@@ -1,7 +1,6 @@
-package com.methane.eco.trans.data.repository
+package com.methane.eco.trans.domain.repository
 
 import com.methane.eco.trans.domain.model.AuthResult
-import kotlinx.coroutines.delay
 
 // Контракт
 interface AuthRepository {
