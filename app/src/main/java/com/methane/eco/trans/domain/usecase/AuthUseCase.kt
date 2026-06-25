@@ -1,7 +1,7 @@
 package com.methane.eco.trans.domain.usecase
 
 import android.util.Patterns
-import com.methane.eco.trans.data.repository.AuthRepository
+import com.methane.eco.trans.domain.repository.AuthRepository
 import com.methane.eco.trans.domain.model.AuthResult
 
 class AuthUseCase (private val _authRepository: AuthRepository) {

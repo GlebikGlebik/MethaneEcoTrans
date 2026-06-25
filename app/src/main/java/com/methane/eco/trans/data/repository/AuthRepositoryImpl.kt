@@ -7,6 +7,7 @@ import com.methane.eco.trans.data.dto.LoginRequest
 import com.methane.eco.trans.data.dto.RegisterRequest
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.domain.model.AuthResult
+import com.methane.eco.trans.domain.repository.AuthRepository
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
