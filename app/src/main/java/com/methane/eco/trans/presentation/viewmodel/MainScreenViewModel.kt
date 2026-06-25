@@ -168,7 +168,21 @@ class MainScreenViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            addRefuelingUseCase(vehicleId, volume, totalSum, refuelDate).fold(
+            // ⚠️ ВРЕМЕННЫЕ ЗАГЛУШКИ (MOCK)
+            // TODO: На следующем шаге мы добавим в UI выбор АЗС и Типа топлива,
+            // и будем брать реальные ID оттуда. Пока передаем пустые/тестовые UUID,
+            // чтобы код компилировался.
+            val mockGasStationId = "00000000-0000-0000-0000-000000000001"
+            val mockFuelTypeId = "00000000-0000-0000-0000-000000000001"
+
+            addRefuelingUseCase(
+                vehicleId = vehicleId,
+                gasStationId = mockGasStationId,
+                fuelTypeId = mockFuelTypeId,
+                volume = volume,
+                totalSum = totalSum,
+                refuelDate = refuelDate
+            ).fold(
                 onSuccess = { message ->
                     _events.send(MainScreenEvent.ShowSnackbar(message))
                     _uiState.value = _uiState.value.copy(
