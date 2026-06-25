@@ -27,7 +27,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.methane.eco.trans.data.repository.MockAuthRepository
+import com.methane.eco.trans.data.local.TokenStorage
+import com.methane.eco.trans.data.repository.AuthRepositoryImpl
 import com.methane.eco.trans.domain.usecase.AuthUseCase
 import com.methane.eco.trans.domain.usecase.ValidationUseCase
 import com.methane.eco.trans.presentation.viewmodel.EnterViewModel
@@ -44,9 +45,17 @@ import com.methane.eco.trans.theme.CustomGrey
 fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewModel(
     factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val repository = MockAuthRepository() // <-- Здесь наша заглушка
+            // Создаем TokenStorage (нужен Context)
+            val context = navController.context
+            val tokenStorage = TokenStorage(context)
+
+            // Создаем репозиторий
+            val repository = AuthRepositoryImpl(tokenStorage)
+
+            // тут у нас useCases
             val useCase = AuthUseCase(repository)
             val validationUseCase = ValidationUseCase()
+
             return EnterViewModel(useCase, validationUseCase) as T
         }
     }
@@ -72,12 +81,11 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
             .fillMaxSize()
             .background(CustomTurquoiseBlue)
     ) {
-
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
 
-        //отслеживание состояний
+        // Отслеживание состояний
         var isFocusedEmail by remember { mutableStateOf(false) }
         var isFocusedPassword by remember { mutableStateOf(false) }
 
@@ -97,7 +105,8 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                 color = CustomCarpiBlue,
                 fontSize = 24.sp
             )
-            //  поле для ввода e-mail
+
+            // Поле для ввода e-mail
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -106,11 +115,10 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 6 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
+                // Плейсхолдер
                 if(uiState.email.isEmpty() && !isFocusedEmail){
                     Text(
                         text = "e-mail",
@@ -138,7 +146,7 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         .onFocusChanged { focusState -> isFocusedEmail = focusState.isFocused },
                     value = uiState.email,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину email до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onEmailChanged(newText)
                         }
@@ -148,13 +156,17 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         fontSize = 12.sp
                     ),
                     cursorBrush = Brush.verticalGradient(
-                        colors = listOf(CustomGrey.copy(alpha = 0.5f), CustomGrey.copy(alpha = 0.5f)),
+                        colors = listOf(
+                            CustomGrey.copy(alpha = 0.5f),
+                            CustomGrey.copy(alpha = 0.5f)
+                        ),
                         startY = 0f,
                         endY = 12f
                     )
                 )
             }
-            // поле дял ввода пароля
+
+            // Поле для ввода пароля
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -165,8 +177,8 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         bottom = boxHeight / 11 * 5 + 5.dp
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp)),
-            ){
-                // плейсхолдер
+            ) {
+                // Плейсхолдер
                 if (uiState.password.isEmpty() && !isFocusedPassword){
                     Text(
                         text = "пароль",
@@ -181,9 +193,8 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         fontFamily = segoe_ui,
                         fontSize = 12.sp,
                     )
-
                 }
-                // сам ввод пароля
+                // Сам ввод пароля
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxSize()
@@ -196,7 +207,7 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         .onFocusChanged { focusState -> isFocusedPassword = focusState.isFocused },
                     value = uiState.password,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину пароля до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onPasswordChanged(newText)
                         }
@@ -206,14 +217,17 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         fontSize = 12.sp
                     ),
                     cursorBrush = Brush.verticalGradient(
-                        colors = listOf(CustomGrey.copy(alpha = 0.5f), CustomGrey.copy(alpha = 0.5f)),
+                        colors = listOf(
+                            CustomGrey.copy(alpha = 0.5f),
+                            CustomGrey.copy(alpha = 0.5f)
+                        ),
                         startY = 0f,
                         endY = 12f
                     )
                 )
             }
 
-            //Кнопка вход
+            // Кнопка вход
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -222,10 +236,9 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 3 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable{
+                    .clickable {
                         if (!uiState.isLoading){
                             viewModel.onEnterClicked()
                         }
@@ -249,7 +262,8 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                     )
                 }
             }
-            //Кнопка регистрация
+
+            // Кнопка регистрация
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -258,7 +272,6 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 2 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
             ) {
@@ -271,32 +284,12 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                     fontFamily = segoe_ui,
                     fontSize = 18.sp
                 )
-
             }
         }
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
-}
-
-@Preview(showBackground = true, name = "EnterScreenPreview")
-@Composable
-fun EnterScreenPreview() {
-    // 1. Создаем тестовый NavController
-    val navController = rememberNavController()
-
-    // 2. Создаем зависимости вручную (без Hilt/Factory)
-    val repository = MockAuthRepository()
-    val useCase = AuthUseCase(repository)
-    val validationUseCase = ValidationUseCase()
-    @Suppress("ViewModelConstructorInComposable")
-    val viewModel = EnterViewModel(useCase, validationUseCase)
-
-    // 3. Передаем их в экран
-    EnterScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
 }

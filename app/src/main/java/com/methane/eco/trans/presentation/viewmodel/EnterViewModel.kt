@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import com.methane.eco.trans.domain.usecase.AuthUseCase
 import com.methane.eco.trans.domain.usecase.ValidationUseCase
-
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenUiState
 import com.methane.eco.trans.presentation.enterscreen.EnterScreenEvent
 

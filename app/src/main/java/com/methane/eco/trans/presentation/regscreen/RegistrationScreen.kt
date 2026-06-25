@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.draw.alpha
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,9 +33,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.methane.eco.trans.data.repository.MockAuthRepository
+import com.methane.eco.trans.data.local.TokenStorage
+import com.methane.eco.trans.data.repository.AuthRepositoryImpl
 import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
 import com.methane.eco.trans.presentation.viewmodel.RegViewModel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
@@ -48,9 +53,18 @@ import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
 fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = viewModel(
     factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val repository = MockAuthRepository() // <-- Здесь наша заглушка
+            // Создаем TokenStorage
+            val context = navController.context
+            val tokenStorage = TokenStorage(context)
+
+            // Создаем реальный репозиторий
+            val repository = AuthRepositoryImpl(tokenStorage)
+
+            // Создаем useCases
             val useCase = AuthUseCase(repository)
-            return RegViewModel(useCase) as T
+            val validationUseCase = ValidationUseCase()
+
+            return RegViewModel(useCase, validationUseCase) as T
         }
     }
 )) {
@@ -75,7 +89,6 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
             .fillMaxSize()
             .background(CustomTurquoiseBlue)
     ) {
-
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
@@ -102,7 +115,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                 color = CustomCarpiBlue,
                 fontSize = 24.sp
             )
-            // поле для ввода фамилии
+
+            // Поле для ввода фамилии
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -111,11 +125,10 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 7 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
+                // Плейсхолдер
                 if (uiState.surname.isEmpty() && !isFocusedSurname) {
                     Text(
                         text = "фамилия",
@@ -143,7 +156,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         .onFocusChanged { focusState -> isFocusedSurname = focusState.isFocused },
                     value = uiState.surname,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onSurnameChanged(newText)
                         }
@@ -162,7 +175,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     )
                 )
             }
-            //  поле для ввода имени
+
+            // Поле для ввода имени
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -171,11 +185,10 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 6 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
+                // Плейсхолдер
                 if (uiState.name.isEmpty() && !isFocusedName) {
                     Text(
                         text = "имя",
@@ -203,7 +216,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         .onFocusChanged { focusState -> isFocusedName = focusState.isFocused },
                     value = uiState.name,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onNameChanged(newText)
                         }
@@ -222,7 +235,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     )
                 )
             }
-            //  поле для ввода e-mail
+
+            // Поле для ввода e-mail
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -231,11 +245,10 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 5 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
+                // Плейсхолдер
                 if (uiState.email.isEmpty() && !isFocusedEmail) {
                     Text(
                         text = "e-mail",
@@ -263,7 +276,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         .onFocusChanged { focusState -> isFocusedEmail = focusState.isFocused },
                     value = uiState.email,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onEmailChanged(newText)
                         }
@@ -282,7 +295,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     )
                 )
             }
-            // поле дял ввода пароля
+
+            // Поле для ввода пароля
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -294,7 +308,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp)),
             ) {
-                // плейсхолдер
+                // Плейсхолдер
                 if (uiState.password.isEmpty() && !isFocusedPassword) {
                     Text(
                         text = "пароль",
@@ -309,9 +323,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         fontFamily = segoe_ui,
                         fontSize = 12.sp,
                     )
-
                 }
-                // сам ввод пароля
+                // Сам ввод пароля
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxSize()
@@ -324,7 +337,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         .onFocusChanged { focusState -> isFocusedPassword = focusState.isFocused },
                     value = uiState.password,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину пароля до 24 символов
                         if (newText.length <= 24) {
                             viewModel.onPasswordChanged(newText)
                         }
@@ -343,7 +356,8 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     )
                 )
             }
-            //Кнопка регистрации
+
+            // Кнопка регистрации
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -352,22 +366,34 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 2 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable { viewModel.onRegisterClick() }
+                    .clickable {
+                        if (!uiState.isLoading) {
+                            viewModel.onRegisterClick()
+                        }
+                    }
             ) {
-                Text(
-                    text = "Регистрация",
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    color = CustomTrafficWhite,
-                    fontFamily = segoe_ui,
-                    fontSize = 16.sp
-                )
-
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(12.dp),
+                        color = CustomTrafficWhite,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Регистрация",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = CustomTrafficWhite,
+                        fontFamily = segoe_ui,
+                        fontSize = 16.sp
+                    )
+                }
             }
-            //Кнопка Вход
+
+            // Кнопка Вход
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -376,7 +402,6 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 1 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
             ) {
@@ -389,8 +414,12 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
                     fontFamily = segoe_ui,
                     fontSize = 16.sp
                 )
-
             }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }
