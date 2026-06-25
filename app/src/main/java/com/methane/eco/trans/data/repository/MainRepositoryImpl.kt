@@ -1,12 +1,7 @@
 package com.methane.eco.trans.data.repository
 
 import android.util.Log
-import com.methane.eco.trans.data.dto.CreateRefuelingRequest
-import com.methane.eco.trans.data.dto.CreateVehicleRequest
-import com.methane.eco.trans.data.dto.RefuelingDto
-import com.methane.eco.trans.data.dto.RefuelingHistoryResponse
-import com.methane.eco.trans.data.dto.VehicleDto
-import com.methane.eco.trans.data.dto.VehiclesResponse
+import com.methane.eco.trans.data.dto.*
 import com.methane.eco.trans.data.local.TokenStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,6 +19,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
@@ -45,9 +41,7 @@ class MainRepositoryImpl(
             level = LogLevel.ALL
         }
     }
-    // Устанавливаем базовый URL сервера
-    // Для эмулятора Android: 10.0.2.2 (localhost)
-    // Для реального устройства: 192.168.0.101
+
     private val baseUrl = "http://10.0.2.2:8080"
 
     private suspend fun getToken(): String? {
@@ -57,11 +51,9 @@ class MainRepositoryImpl(
     override suspend fun getVehicles(): Result<List<VehicleDto>> {
         return try {
             val token = getToken() ?: return Result.failure(Exception("Не авторизован"))
-
             val response: HttpResponse = client.get("$baseUrl/api/v1/users/vehicles") {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
-
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val vehiclesResponse: VehiclesResponse = response.body()
@@ -78,18 +70,13 @@ class MainRepositoryImpl(
     override suspend fun addVehicle(request: CreateVehicleRequest): Result<String> {
         return try {
             val token = getToken() ?: return Result.failure(Exception("Не авторизован"))
-
             val response: HttpResponse = client.post("$baseUrl/api/v1/users/vehicles") {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(request)
             }
-
             when (response.status) {
-                HttpStatusCode.Created -> {
-                    val body = response.bodyAsText()
-                    Result.success("ТС добавлено")
-                }
+                HttpStatusCode.Created -> Result.success("ТС добавлено")
                 else -> Result.failure(Exception("Ошибка: ${response.status}"))
             }
         } catch (e: Exception) {
@@ -101,11 +88,9 @@ class MainRepositoryImpl(
     override suspend fun deleteVehicle(vehicleId: String): Result<Unit> {
         return try {
             val token = getToken() ?: return Result.failure(Exception("Не авторизован"))
-
             val response: HttpResponse = client.delete("$baseUrl/api/v1/users/vehicles/$vehicleId") {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
-
             when (response.status) {
                 HttpStatusCode.OK -> Result.success(Unit)
                 else -> Result.failure(Exception("Ошибка: ${response.status}"))
@@ -119,18 +104,13 @@ class MainRepositoryImpl(
     override suspend fun addRefueling(request: CreateRefuelingRequest): Result<String> {
         return try {
             val token = getToken() ?: return Result.failure(Exception("Не авторизован"))
-
             val response: HttpResponse = client.post("$baseUrl/api/v1/refueling") {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
                 setBody(request)
             }
-
             when (response.status) {
-                HttpStatusCode.Created -> {
-                    val body = response.bodyAsText()
-                    Result.success("Заправка добавлена")
-                }
+                HttpStatusCode.Created -> Result.success("Заправка добавлена")
                 else -> Result.failure(Exception("Ошибка: ${response.status}"))
             }
         } catch (e: Exception) {
@@ -139,15 +119,25 @@ class MainRepositoryImpl(
         }
     }
 
-    override suspend fun getRefuelingHistory(vehicleId: String?): Result<List<RefuelingDto>> {
+    // ОБНОВЛЕННАЯ РЕАЛИЗАЦИЯ ПОЛУЧЕНИЯ ИСТОРИИ
+    override suspend fun getRefuelingHistory(
+        vehicleId: String?,
+        startDate: String?,
+        endDate: String?,
+        page: Int,
+        size: Int
+    ): Result<RefuelingHistoryResponse> {
         return try {
             val token = getToken() ?: return Result.failure(Exception("Не авторизован"))
 
-            val url = if (vehicleId != null) {
-                "$baseUrl/api/v1/refueling/history?vehicleId=$vehicleId"
-            } else {
-                "$baseUrl/api/v1/refueling/history"
-            }
+            // Динамическая сборка URL с query-параметрами
+            val url = URLBuilder("$baseUrl/api/v1/refueling/history").apply {
+                vehicleId?.let { parameters.append("vehicleId", it) }
+                startDate?.let { parameters.append("startDate", it) }
+                endDate?.let { parameters.append("endDate", it) }
+                parameters.append("page", page.toString())
+                parameters.append("size", size.toString())
+            }.buildString()
 
             val response: HttpResponse = client.get(url) {
                 header(HttpHeaders.Authorization, "Bearer $token")
@@ -156,9 +146,9 @@ class MainRepositoryImpl(
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val historyResponse: RefuelingHistoryResponse = response.body()
-                    Result.success(historyResponse.refuelings)
+                    Result.success(historyResponse)
                 }
-                else -> Result.failure(Exception("Ошибка: ${response.status}"))
+                else -> Result.failure(Exception("Ошибка сервера: ${response.status}"))
             }
         } catch (e: Exception) {
             Log.e("MainRepository", "Ошибка получения истории: ${e.message}", e)
