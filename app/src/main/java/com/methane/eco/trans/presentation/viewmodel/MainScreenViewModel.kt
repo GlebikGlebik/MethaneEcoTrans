@@ -40,6 +40,7 @@ class MainScreenViewModel(
         loadVehicles()
     }
 
+
     // --- Сеттеры для UI ---
     fun onDateChanged(newDate: String) {
         _uiState.value = _uiState.value.copy(date = newDate)
