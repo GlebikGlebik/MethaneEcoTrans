@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class MainScreenViewModel(
     private val getVehiclesUseCase: GetVehiclesUseCase,
@@ -32,8 +34,7 @@ class MainScreenViewModel(
     val events = _events.receiveAsFlow()
 
     // ⚠️ MOCK ДАННЫЕ ДЛЯ СЕРВЕРА (Замените на реальные ID из БД, когда добавите выбор АЗС)
-    private val MOCK_GAS_STATION_ID = "00000000-0000-0000-0000-000000000001"
-    private val MOCK_FUEL_TYPE_ID = "f3a901de-93de-422e-9efb-855aec3a6cae"
+    private val MOCK_GAS_STATION_PRICES_ID = "76aec5a0-f768-4ea4-8639-f04bda007626"
 
     init {
         loadVehicles()
@@ -185,13 +186,24 @@ class MainScreenViewModel(
     fun addRefueling() {
         val state = _uiState.value
 
+        val isoDate = try {
+            val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+            val localDate = LocalDate.parse(state.date, dateFormatter)
+            localDate.atStartOfDay().toString() // "2006-06-25T00:00:00"
+        } catch (e: Exception) {
+            viewModelScope.launch {
+                _events.send(MainScreenEvent.ShowSnackbar("Неверный формат даты"))
+            }
+            _uiState.value = state.copy(isLoading = false)
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true)
 
             addRefuelingUseCase(
                 vehicleId = state.currentVehicleId,
-                gasStationId = MOCK_GAS_STATION_ID,
-                fuelTypeId = MOCK_FUEL_TYPE_ID,
+                gasStationPricesId = MOCK_GAS_STATION_PRICES_ID,
                 volume = state.volume.toDoubleOrNull() ?: 0.0,
                 totalSum = state.sum.toDoubleOrNull() ?: 0.0,
                 refuelDate = state.date, // Ожидается ISO формат

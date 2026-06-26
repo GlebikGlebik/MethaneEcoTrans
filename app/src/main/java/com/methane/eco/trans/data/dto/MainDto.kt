@@ -35,8 +35,7 @@ data class CreateVehicleRequest(
 @Serializable
 data class CreateRefuelingRequest(
     val vehicleId: String,
-    val gasStationId: String,
-    val fuelTypeId: String,
+    val gasStationPricesId: String,
     val volume: Double,
     val totalSum: Double,
     val refuelDate: String,
@@ -46,15 +45,21 @@ data class CreateRefuelingRequest(
 @Serializable
 data class RefuelingResponse(
     val refuelingId: String,
-    val message: String
+    val vehicleId: String,
+    val vehicleName: String,
+    val vehicleLicensePlate: String?,
+    val gasStationId: String,
+    val gasStationAddress: String,
+    val fuelTypeId: String,
+    val fuelTypeName: String,
+    val volume: Double,
+    val pricePerLiter: Double,
+    val totalSum: Double,
+    val refuelDate: String,
+    val fuelCardId: String?
 )
 
-// DTO для истории заправок
-@Serializable
-data class RefuelingHistoryResponse(
-    val refuelings: List<RefuelingDto>,
-    val totalCount: Int // Добавлено для пагинации
-)
+// ✅ ДОБАВЛЕНО: RefuelingDto - используется в HistoryScreen
 @Serializable
 data class RefuelingDto(
     val refuelingId: String,
@@ -62,12 +67,19 @@ data class RefuelingDto(
     val vehicleName: String,
     val vehicleLicensePlate: String?,
     val gasStationId: String,
-    val gasStationAddress: String, // Адрес АЗС (нужен для UI)
+    val gasStationAddress: String,
     val fuelTypeId: String,
-    val fuelTypeName: String,      // Название топлива (нужен для UI)
+    val fuelTypeName: String,
     val volume: Double,
-    val pricePerLiter: Double,     // Цена за литр
+    val pricePerLiter: Double,
     val totalSum: Double,
-    val refuelDate: String,        // ISO-8601 формат
+    val refuelDate: String,
     val fuelCardId: String?
+)
+
+// DTO для истории заправок
+@Serializable
+data class RefuelingHistoryResponse(
+    val refuelings: List<RefuelingDto>,
+    val totalCount: Int
 )

@@ -24,12 +24,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.methane.eco.trans.R
-import com.methane.eco.trans.data.dto.RefuelingDto
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
 import com.methane.eco.trans.presentation.viewmodel.HistoryViewModel
+import com.methane.eco.trans.data.dto.RefuelingDto
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.theme.CustomDeepOrange
 import com.methane.eco.trans.theme.CustomGrey

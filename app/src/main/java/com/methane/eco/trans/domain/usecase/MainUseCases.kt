@@ -35,8 +35,7 @@ class DeleteVehicleUseCase(private val _repository: MainRepository) {
 class AddRefuelingUseCase(private val _repository: MainRepository) {
     suspend operator fun invoke(
         vehicleId: String,
-        gasStationId: String,
-        fuelTypeId: String,
+        gasStationPricesId: String,
         volume: Double,
         totalSum: Double,
         refuelDate: String,
@@ -46,7 +45,7 @@ class AddRefuelingUseCase(private val _repository: MainRepository) {
         if (volume <= 0) return Result.failure(Exception("Объем должен быть больше 0"))
         if (totalSum < 0) return Result.failure(Exception("Сумма не может быть отрицательной"))
 
-        val request = CreateRefuelingRequest(vehicleId, gasStationId, fuelTypeId, volume, totalSum, refuelDate, fuelCardId)
+        val request = CreateRefuelingRequest(vehicleId, gasStationPricesId, volume, totalSum, refuelDate, fuelCardId)
         return _repository.addRefueling(request)
     }
 }
