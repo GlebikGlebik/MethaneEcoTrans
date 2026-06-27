@@ -27,7 +27,7 @@ class HistoryViewModel(
 
     init {
         loadVehicles()
-        loadHistory() // ✅ Загружаем историю сразу при входе на экран
+        loadHistory() // Загружаем историю сразу при входе на экран
     }
 
     private fun loadVehicles() {
@@ -82,7 +82,7 @@ class HistoryViewModel(
         }
     }
 
-    // ✅ Сеттеры для фильтров (триггерят перезагрузку истории)
+    // Сеттеры для фильтров
     fun onVehicleFilterChanged(vehicleId: String?) {
         _uiState.value = _uiState.value.copy(selectedVehicleId = vehicleId)
         loadHistory()

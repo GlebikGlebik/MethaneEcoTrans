@@ -59,7 +59,7 @@ data class RefuelingResponse(
     val fuelCardId: String?
 )
 
-// ✅ ДОБАВЛЕНО: RefuelingDto - используется в HistoryScreen
+// RefuelingDto - используется в HistoryScreen
 @Serializable
 data class RefuelingDto(
     val refuelingId: String,

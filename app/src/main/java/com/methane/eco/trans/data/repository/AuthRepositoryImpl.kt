@@ -108,8 +108,8 @@ class AuthRepositoryImpl(
         firstName: String,
         lastName: String,
         phone: String?,
-        userType: String, // ✅ НОВОЕ
-        companyInn: String? // ✅ НОВОЕ
+        userType: String,
+        companyInn: String?
     ): AuthResult {
         return try {
             val response: HttpResponse = client.post("$baseUrl/api/v1/auth/register") {
@@ -120,8 +120,8 @@ class AuthRepositoryImpl(
                     firstName = firstName,
                     lastName = lastName,
                     phone = phone,
-                    userType = userType, // ✅ НОВОЕ
-                    companyInn = companyInn // ✅ НОВОЕ
+                    userType = userType,
+                    companyInn = companyInn
                 ))
             }
             when (response.status) {

@@ -14,8 +14,8 @@ class AuthUseCase(private val _authRepository: AuthRepository) {
         firstName: String,
         lastName: String,
         phone: String?,
-        userType: String = "B2C",       // ✅ НОВОЕ
-        companyInn: String? = null      // ✅ НОВОЕ
+        userType: String = "B2C",
+        companyInn: String? = null
     ): AuthResult {
         return _authRepository.register(
             email, password, firstName, lastName, phone, userType, companyInn

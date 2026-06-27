@@ -22,8 +22,8 @@ class ValidationUseCase {
         firstName: String,
         lastName: String,
         phone: String? = null,
-        userType: String = "B2C", // ✅ НОВОЕ
-        companyInn: String? = null // ✅ НОВОЕ
+        userType: String = "B2C",
+        companyInn: String? = null
     ): AuthResult {
         val trimmedEmail = email.trim()
         if (trimmedEmail.isBlank() || password.isBlank() ||
@@ -43,12 +43,12 @@ class ValidationUseCase {
             }
         }
 
-        // ✅ НОВОЕ: Валидация типа пользователя
+        // Валидация типа пользователя
         if (userType !in listOf("B2C", "B2B")) {
             return AuthResult.Error("Неверный тип пользователя")
         }
 
-        // ✅ НОВОЕ: B2B пользователь обязан указать ИНН
+        // B2B пользователь обязан указать ИНН
         if (userType == "B2B" && companyInn.isNullOrBlank()) {
             return AuthResult.Error("Для корпоративного аккаунта необходимо указать ИНН компании")
         }
