@@ -116,7 +116,7 @@ fun HistoryScreen(
             }
         }
 
-        // ✅ НОВОЕ МЕНЮ ФИЛЬТРОВ И СОРТИРОВКИ
+        // ЕНЮ ФИЛЬТРОВ И СОРТИРОВКИ
         Box(
             modifier = Modifier
                 .fillMaxSize()

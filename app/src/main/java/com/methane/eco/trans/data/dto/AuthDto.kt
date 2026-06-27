@@ -9,8 +9,8 @@ data class RegisterRequest(
     val firstName: String,
     val lastName: String,
     val phone: String? = null,
-    val userType: String = "B2C", // ✅ НОВОЕ
-    val companyInn: String? = null // ✅ НОВОЕ
+    val userType: String = "B2C",
+    val companyInn: String? = null
 )
 
 @Serializable
@@ -26,8 +26,8 @@ data class AuthResponse(
     val email: String,
     val firstName: String,
     val lastName: String,
-    val userType: String, // ✅ НОВОЕ
-    val companyInn: String? = null // ✅ НОВОЕ
+    val userType: String,
+    val companyInn: String? = null
 )
 
 @Serializable

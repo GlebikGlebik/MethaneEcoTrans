@@ -14,7 +14,7 @@ interface AuthRepository {
         firstName: String,
         lastName: String,
         phone: String?,
-        userType: String = "B2C", // ✅ НОВОЕ
-        companyInn: String? = null // ✅ НОВОЕ
+        userType: String = "B2C", //
+        companyInn: String? = null //
     ): AuthResult
 }

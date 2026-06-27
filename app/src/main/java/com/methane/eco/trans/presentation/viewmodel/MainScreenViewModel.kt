@@ -33,7 +33,7 @@ class MainScreenViewModel(
     private val _events = Channel<MainScreenEvent>()
     val events = _events.receiveAsFlow()
 
-    // ⚠️ MOCK ДАННЫЕ ДЛЯ СЕРВЕРА (Замените на реальные ID из БД, когда добавите выбор АЗС)
+    // ⚠️ MOCK ДАННЫЕ ДЛЯ СЕРВЕРА
     private val MOCK_GAS_STATION_PRICES_ID = "76aec5a0-f768-4ea4-8639-f04bda007626"
 
     init {
@@ -105,7 +105,7 @@ class MainScreenViewModel(
         }
     }
 
-    // ✅ НОВОЕ: Быстрое добавление ТС (с генерацией Mock VIN для обхода валидации сервера)
+    // Быстрое добавление ТС
     fun addNewVehicle() {
         val plate = _uiState.value.newVehiclePlate
         if (plate.isBlank()) {
@@ -146,7 +146,7 @@ class MainScreenViewModel(
         }
     }
 
-    // ✅ НОВОЕ: Удаление ТС по введенному номеру
+    // Удаление ТС по введенному номеру
     fun deleteVehicleByPlate() {
         val plate = _uiState.value.newVehiclePlate
         val vehicleToDelete = _uiState.value.userVehicles.find {
