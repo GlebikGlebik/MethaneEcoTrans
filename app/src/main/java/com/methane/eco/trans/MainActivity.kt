@@ -10,6 +10,10 @@ import androidx.navigation.compose.rememberNavController
 import com.methane.eco.trans.theme.METTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.methane.eco.trans.presentation.enterscreen.EnterScreen
+import com.methane.eco.trans.presentation.historyscreen.HistoryScreen
+import com.methane.eco.trans.presentation.mainscreen.MainScreen
+import com.methane.eco.trans.presentation.regscreen.RegistrationScreen
 
 
 val segoe_ui_bold = FontFamily(
@@ -30,9 +34,9 @@ class MainActivity : ComponentActivity(){
                 NavHost(navController, startDestination = "EnterScreen"){
                     composable("EnterScreen") { EnterScreen(navController) }
                     composable("RegistrationScreen") { RegistrationScreen(navController) }
-                    composable("MainScreen") {MainScreen(navController)}
+                    composable("MainScreen") { MainScreen(navController) }
                     composable("ProfileScreen") {ProfileScreen(navController)}
-                    composable("HistoryScreen") {HistoryScreen(navController)}
+                    composable("HistoryScreen") { HistoryScreen(navController) }
                 }
 
             }

@@ -1,5 +1,4 @@
-package com.methane.eco.trans
-
+package com.methane.eco.trans.presentation.regscreen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.draw.alpha
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,176 +27,77 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import android.util.Patterns
-import androidx.compose.foundation.layout.offset
-import android.util.Log
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.methane.eco.trans.data.local.TokenStorage
+import com.methane.eco.trans.data.repository.AuthRepositoryImpl
+import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
+import com.methane.eco.trans.presentation.viewmodel.RegViewModel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Composable
-fun RegistrationScreen(navController: NavController) {
+fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = viewModel(
+    factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            // Создаем TokenStorage
+            val context = navController.context
+            val tokenStorage = TokenStorage(context)
+
+            // Создаем реальный репозиторий
+            val repository = AuthRepositoryImpl(tokenStorage)
+
+            // Создаем useCases
+            val useCase = AuthUseCase(repository)
+            val validationUseCase = ValidationUseCase()
+
+            return RegViewModel(useCase, validationUseCase) as T
+        }
+    }
+)) {
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when(event){
+                is RegScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") {
+                    popUpTo("RegistrationScreen") {inclusive}
+                }}
+                is RegScreenEvent.NavigateToEnterScreen -> { navController.navigate("EnterScreen")}
+                is RegScreenEvent.ShowSnackbar -> { snackbarHostState.showSnackbar(event.message)}
+            }
+        }
+    }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomTurquoiseBlue)
     ) {
-
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
-
-        // Для корутин в @composable
-        val coroutineScope = rememberCoroutineScope()
-
-        // Отслеживание состояний
-        var password by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
-        var name by remember { mutableStateOf("") }
-        var surname by remember { mutableStateOf("") }
-
-        // Состояния для ошибок
-        var emailError by remember { mutableStateOf(false) }
-        var emptyFieldsError by remember { mutableStateOf(false) }
 
         // Состояния для фокуса
         var isFocusedName by remember { mutableStateOf(false) }
         var isFocusedSurname by remember { mutableStateOf(false) }
         var isFocusedEmail by remember { mutableStateOf(false) }
         var isFocusedPassword by remember { mutableStateOf(false) }
-
-        // добавляем функцию, проверяющую корректность email
-        fun isEmailValid(email: String): Boolean {
-            return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        }
-
-        // Флаг для отображения RegistrationActivity
-        var showRegistrationActivity by remember { mutableStateOf(false) }
-
-        // Обработчик нажатия на кнопку регистрации
-        fun onRegisterClick() {
-            emailError = !isEmailValid(email)
-            emptyFieldsError = name.isEmpty() || surname.isEmpty() || email.isEmpty() || password.isEmpty()
-
-            if (!emailError && !emptyFieldsError) {
-                showRegistrationActivity = true
-                // Логируем данные пользователя
-                Log.d("RegistrarionScreen", "Данные пользователя: $name, $surname, $email")
-            }
-        }
-
-        // Если нужно показать RegistrationActivity, вызываем её
-        if (showRegistrationActivity) {
-            RegisterActivity(
-                email = email,
-                password = password,
-                onRegistrationSuccess = { user ->
-                    // Перейти на следующий экран после успешной регистрации
-                    saveUserData(email, password, surname, name)
-                    navController.navigate("MainScreen") {
-                        popUpTo("EnterScreen") { inclusive = true }
-                    }
-                    showRegistrationActivity = false
-                },
-                onRegistrationFailure = { errorMessage ->
-                    // Обработка ошибки регистрации
-                    Log.e("RegistrationScreen", errorMessage)
-                    showRegistrationActivity = false
-                }
-            )
-        }
-
-        // Уведомление некорректный email
-        if (emailError && !emptyFieldsError) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(boxWidth, boxHeight / 11 + 5.dp)
-                    .offset(x = boxWidth / 2, y = 170.dp)
-                    .background(color = CustomErrorBarBackgroundColor, shape = RoundedCornerShape(15.dp))
-            ){
-                Text(
-                    text = "Неправильный формат email",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(
-                            start = 5.dp,
-                            end = 5.dp
-                        ),
-                    fontFamily = segoe_ui,
-                    color = CustomTrafficWhite,
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        // уведомление некорректный email и неполный ввод
-        if (emailError && emptyFieldsError) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(boxWidth + 20.dp, (boxHeight / 11) * 2 + 5.dp)
-                    .offset(x = boxWidth / 2 - 10.dp, y = 128.dp)
-                    .background(color = CustomErrorBarBackgroundColor, shape = RoundedCornerShape(15.dp))
-            ){
-                Text(
-                    text = "Неправильный формат email",
-                    modifier = Modifier
-                        .padding(
-                            bottom = boxHeight / 11,
-                            start = 5.dp,
-                            end = 5.dp
-                        )
-                        .align(Alignment.Center),
-                    fontFamily = segoe_ui,
-                    color = CustomTrafficWhite,
-                    fontSize = 12.sp
-                )
-
-                Text(
-                    text = "Все поля должны быть заполнены",
-                    modifier = Modifier
-                        .padding(
-                            top = boxHeight / 11,
-                            start = 5.dp,
-                            end = 5.dp
-                        )
-                        .align(Alignment.Center),
-                    fontFamily = segoe_ui,
-                    color = CustomTrafficWhite,
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        // уведомление неполный ввод
-        if (emptyFieldsError && !emailError) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(boxWidth + 20.dp, boxHeight / 11 + 5.dp)
-                    .offset(x = boxWidth / 2 - 10.dp, y = 170.dp)
-                    .background(color = CustomErrorBarBackgroundColor, shape = RoundedCornerShape(15.dp))
-            ){
-                Text(
-                    text = "Все поля должны быть заполнены",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(
-                            start = 5.dp,
-                            end = 5.dp
-                        ),
-                    fontFamily = segoe_ui,
-                    color = CustomTrafficWhite,
-                    fontSize = 12.sp
-                )
-            }
-        }
 
         Box(
             modifier = Modifier
@@ -214,7 +115,8 @@ fun RegistrationScreen(navController: NavController) {
                 color = CustomCarpiBlue,
                 fontSize = 24.sp
             )
-            // поле для ввода фамилии
+
+            // Поле для ввода фамилии
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -223,12 +125,11 @@ fun RegistrationScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 7 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
-                if (surname.isEmpty() && !isFocusedSurname) {
+                // Плейсхолдер
+                if (uiState.surname.isEmpty() && !isFocusedSurname) {
                     Text(
                         text = "фамилия",
                         modifier = Modifier
@@ -253,11 +154,11 @@ fun RegistrationScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedSurname = focusState.isFocused },
-                    value = surname,
+                    value = uiState.surname,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
-                            surname = newText
+                            viewModel.onSurnameChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -274,7 +175,8 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 )
             }
-            //  поле для ввода имени
+
+            // Поле для ввода имени
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -283,12 +185,11 @@ fun RegistrationScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 6 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
-                if (name.isEmpty() && !isFocusedName) {
+                // Плейсхолдер
+                if (uiState.name.isEmpty() && !isFocusedName) {
                     Text(
                         text = "имя",
                         modifier = Modifier
@@ -313,11 +214,11 @@ fun RegistrationScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedName = focusState.isFocused },
-                    value = name,
+                    value = uiState.name,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
-                            name = newText
+                            viewModel.onNameChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -334,7 +235,8 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 )
             }
-            //  поле для ввода e-mail
+
+            // Поле для ввода e-mail
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -343,12 +245,11 @@ fun RegistrationScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 5 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
-                if (email.isEmpty() && !isFocusedEmail) {
+                // Плейсхолдер
+                if (uiState.email.isEmpty() && !isFocusedEmail) {
                     Text(
                         text = "e-mail",
                         modifier = Modifier
@@ -373,11 +274,11 @@ fun RegistrationScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedEmail = focusState.isFocused },
-                    value = email,
+                    value = uiState.email,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину до 24 символов
                         if (newText.length <= 24) {
-                            email = newText
+                            viewModel.onEmailChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -394,7 +295,8 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 )
             }
-            // поле дял ввода пароля
+
+            // Поле для ввода пароля
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -406,8 +308,8 @@ fun RegistrationScreen(navController: NavController) {
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp)),
             ) {
-                // плейсхолдер
-                if (password.isEmpty() && !isFocusedPassword) {
+                // Плейсхолдер
+                if (uiState.password.isEmpty() && !isFocusedPassword) {
                     Text(
                         text = "пароль",
                         modifier = Modifier
@@ -421,9 +323,8 @@ fun RegistrationScreen(navController: NavController) {
                         fontFamily = segoe_ui,
                         fontSize = 12.sp,
                     )
-
                 }
-                // сам ввод пароля
+                // Сам ввод пароля
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxSize()
@@ -434,11 +335,11 @@ fun RegistrationScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedPassword = focusState.isFocused },
-                    value = password,
+                    value = uiState.password,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину пароля до 24 символов
                         if (newText.length <= 24) {
-                            password = newText
+                            viewModel.onPasswordChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -455,7 +356,8 @@ fun RegistrationScreen(navController: NavController) {
                     )
                 )
             }
-            //Кнопка регистрации
+
+            // Кнопка регистрации
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -464,22 +366,34 @@ fun RegistrationScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 2 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable { onRegisterClick() }
+                    .clickable {
+                        if (!uiState.isLoading) {
+                            viewModel.onRegisterClick()
+                        }
+                    }
             ) {
-                Text(
-                    text = "Регистрация",
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    color = CustomTrafficWhite,
-                    fontFamily = segoe_ui,
-                    fontSize = 16.sp
-                )
-
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(12.dp),
+                        color = CustomTrafficWhite,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Регистрация",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = CustomTrafficWhite,
+                        fontFamily = segoe_ui,
+                        fontSize = 16.sp
+                    )
+                }
             }
-            //Кнопка Вход
+
+            // Кнопка Вход
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -488,7 +402,6 @@ fun RegistrationScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 1 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
             ) {
@@ -496,13 +409,17 @@ fun RegistrationScreen(navController: NavController) {
                     text = "Вход",
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .clickable { navController.navigate("EnterScreen") },
+                        .clickable { viewModel.onEnterClicked() },
                     color = CustomTrafficWhite,
                     fontFamily = segoe_ui,
                     fontSize = 16.sp
                 )
-
             }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }

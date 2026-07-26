@@ -1,6 +1,7 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.enterscreen
 
-import android.util.Patterns
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.style.TextAlign
@@ -19,96 +20,74 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.focus.onFocusChanged
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarDuration
-import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
-import kotlinx.coroutines.Dispatchers
+import androidx.compose.material3.SnackbarHost
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.methane.eco.trans.data.local.TokenStorage
+import com.methane.eco.trans.data.repository.AuthRepositoryImpl
+import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
+import com.methane.eco.trans.presentation.viewmodel.EnterViewModel
+import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 
+
 @Composable
-fun EnterScreen(navController: NavController) {
+fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewModel(
+    factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            // Создаем TokenStorage (нужен Context)
+            val context = navController.context
+            val tokenStorage = TokenStorage(context)
+
+            // Создаем репозиторий
+            val repository = AuthRepositoryImpl(tokenStorage)
+
+            // тут у нас useCases
+            val useCase = AuthUseCase(repository)
+            val validationUseCase = ValidationUseCase()
+
+            return EnterViewModel(useCase, validationUseCase) as T
+        }
+    }
+)) {
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is EnterScreenEvent.ShowSnackbar -> {snackbarHostState.showSnackbar(event.message)}
+                is EnterScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") {
+                    popUpTo("EnterScreen") {inclusive = true}
+                } }
+                is EnterScreenEvent.NavigateToRegistrationScreen -> { navController.navigate("RegistrationScreen") }
+            }
+        }
+    }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomTurquoiseBlue)
     ) {
-
-        //корутина, экземпляр furebaseAuthentification и состояние для снекбара (вспылвашек)
-        val auth = Firebase.auth
-        val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
-
         // Получаем размеры внутреннего экрана, которые равняются половине экрана
         val boxWidth = this.maxWidth * 0.5f
         val boxHeight = this.maxHeight * 0.5f
 
-        //отслеживание состояний
-        var password by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
+        // Отслеживание состояний
         var isFocusedEmail by remember { mutableStateOf(false) }
         var isFocusedPassword by remember { mutableStateOf(false) }
-        var isLoading by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-
-        // Состояния ошибок
-        var emailError by remember { mutableStateOf(false) }
-        var emptyFieldsError by remember { mutableStateOf(false) }
-
-        // добавляем функцию, проверяющую корректность email
-        fun isEmailValid(email: String): Boolean {
-            return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        }
-
-        fun onEnterClick(){
-            //проверяем ошибки
-            emailError = !isEmailValid(email)
-            emptyFieldsError = email.isEmpty() || password.isEmpty()
-
-            if (!emailError && !emptyFieldsError){
-//                signInUser(
-//                    auth = auth,
-//                    email = email,
-//                    password = password,
-//                    navController = navController,
-//                    snackbarHostState = snackbarHostState,
-//                    coroutineScope = coroutineScope
-//                )
-                coroutineScope.launch(Dispatchers.IO) {
-                    checkUserByEmailAndPassword(
-                        email = email,
-                        password = password,
-                        navController = navController,
-                        snackbarHostState = snackbarHostState,
-                    )
-                }
-            } else {
-                if (emailError && !emptyFieldsError) {
-                    isLoading = false
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            "Неверный формат email",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-                if (!emailError && emptyFieldsError) {
-                    isLoading = false
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            "Необходимо заполнить все поля",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
-            }
-        }
 
         Box(
             modifier = Modifier
@@ -126,7 +105,8 @@ fun EnterScreen(navController: NavController) {
                 color = CustomCarpiBlue,
                 fontSize = 24.sp
             )
-            //  поле для ввода e-mail
+
+            // Поле для ввода e-mail
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -135,12 +115,11 @@ fun EnterScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 6 + 5.dp
-
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp))
             ) {
-                //плейсхолдер
-                if(email.isEmpty() && !isFocusedEmail){
+                // Плейсхолдер
+                if(uiState.email.isEmpty() && !isFocusedEmail){
                     Text(
                         text = "e-mail",
                         modifier = Modifier
@@ -165,11 +144,11 @@ fun EnterScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedEmail = focusState.isFocused },
-                    value = email,
+                    value = uiState.email,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину email до 24 символов
                         if (newText.length <= 24) {
-                            email = newText
+                            viewModel.onEmailChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -177,13 +156,17 @@ fun EnterScreen(navController: NavController) {
                         fontSize = 12.sp
                     ),
                     cursorBrush = Brush.verticalGradient(
-                        colors = listOf(CustomGrey.copy(alpha = 0.5f), CustomGrey.copy(alpha = 0.5f)),
+                        colors = listOf(
+                            CustomGrey.copy(alpha = 0.5f),
+                            CustomGrey.copy(alpha = 0.5f)
+                        ),
                         startY = 0f,
                         endY = 12f
                     )
                 )
             }
-            // поле дял ввода пароля
+
+            // Поле для ввода пароля
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -194,9 +177,9 @@ fun EnterScreen(navController: NavController) {
                         bottom = boxHeight / 11 * 5 + 5.dp
                     )
                     .background(CustomEnterBarColor, shape = RoundedCornerShape(10.dp)),
-            ){
-                // плейсхолдер
-                if (password.isEmpty() && !isFocusedPassword){
+            ) {
+                // Плейсхолдер
+                if (uiState.password.isEmpty() && !isFocusedPassword){
                     Text(
                         text = "пароль",
                         modifier = Modifier
@@ -210,9 +193,8 @@ fun EnterScreen(navController: NavController) {
                         fontFamily = segoe_ui,
                         fontSize = 12.sp,
                     )
-
                 }
-                // сам ввод пароля
+                // Сам ввод пароля
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxSize()
@@ -223,11 +205,11 @@ fun EnterScreen(navController: NavController) {
                         )
                         .align(Alignment.Center)
                         .onFocusChanged { focusState -> isFocusedPassword = focusState.isFocused },
-                    value = password,
+                    value = uiState.password,
                     onValueChange = { newText ->
-                        // Ограничиваем длину пароля до 14 символов
+                        // Ограничиваем длину пароля до 24 символов
                         if (newText.length <= 24) {
-                            password = newText
+                            viewModel.onPasswordChanged(newText)
                         }
                     },
                     textStyle = TextStyle(
@@ -235,14 +217,17 @@ fun EnterScreen(navController: NavController) {
                         fontSize = 12.sp
                     ),
                     cursorBrush = Brush.verticalGradient(
-                        colors = listOf(CustomGrey.copy(alpha = 0.5f), CustomGrey.copy(alpha = 0.5f)),
+                        colors = listOf(
+                            CustomGrey.copy(alpha = 0.5f),
+                            CustomGrey.copy(alpha = 0.5f)
+                        ),
                         startY = 0f,
                         endY = 12f
                     )
                 )
             }
 
-            //Кнопка вход
+            // Кнопка вход
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -251,18 +236,15 @@ fun EnterScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 3 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
-                    .clickable{
-                        if (!isLoading){
-                            isLoading = true
-                            onEnterClick()
-                            isLoading = false
+                    .clickable {
+                        if (!uiState.isLoading){
+                            viewModel.onEnterClicked()
                         }
                     }
             ) {
-                if (isLoading) {
+                if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -280,7 +262,8 @@ fun EnterScreen(navController: NavController) {
                     )
                 }
             }
-            //Кнопка регистрация
+
+            // Кнопка регистрация
             Box(
                 modifier = Modifier
                     .requiredSize(boxWidth, boxHeight)
@@ -289,7 +272,6 @@ fun EnterScreen(navController: NavController) {
                         start = boxWidth / 11,
                         end = boxWidth / 11,
                         bottom = boxHeight / 11 * 2 + 5.dp
-
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
             ) {
@@ -297,15 +279,15 @@ fun EnterScreen(navController: NavController) {
                     text = "Регистрация",
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .clickable { navController.navigate("RegistrationScreen") },
+                        .clickable { viewModel.onRegistrationClicked() },
                     color = CustomTrafficWhite,
                     fontFamily = segoe_ui,
                     fontSize = 18.sp
                 )
-
             }
         }
-        androidx.compose.material3.SnackbarHost(
+
+        SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
