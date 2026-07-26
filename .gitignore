@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+/.idea/androidTestResultsUserPreferences.xml
+/.idea/compiler.xml
+/.idea/dbnavigator.xml
+/.idea/deploymentTargetSelector.xml
+/.kotlin/errors/errors-1745426296585.log
+/.kotlin/errors/errors-1745610342163.log
+/.kotlin/errors/errors-1753551365526.log
