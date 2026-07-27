@@ -5,8 +5,8 @@ data class RegScreenUIState(
     val email: String = "",
     val name: String = "",
     val surname: String = "",
-    val userType: String = "B2C",           // String вместо String?
-    val companyInn: String = "",            // String вместо String?
+    val userType: String = "B2C",
+    val companyInn: String = "",
     val phone: String? = null,
     val isLoading: Boolean = false
 ) {

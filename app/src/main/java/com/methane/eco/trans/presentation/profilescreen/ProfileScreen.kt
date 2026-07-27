@@ -1,4 +1,4 @@
-package com.methane.eco.trans
+package com.methane.eco.trans.presentation.profilescreen
 
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
@@ -55,6 +55,8 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import com.methane.eco.trans.R
+import com.methane.eco.trans.segoe_ui
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
