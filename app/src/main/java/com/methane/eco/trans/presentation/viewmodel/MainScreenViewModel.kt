@@ -2,7 +2,6 @@ package com.methane.eco.trans.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
@@ -41,7 +40,7 @@ class MainScreenViewModel(
     }
 
 
-    // --- Сеттеры для UI ---
+    // сеттеры
     fun onDateChanged(newDate: String) {
         _uiState.value = _uiState.value.copy(date = newDate)
     }
