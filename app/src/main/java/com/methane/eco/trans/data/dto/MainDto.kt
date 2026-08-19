@@ -42,23 +42,6 @@ data class CreateRefuelingRequest(
     val fuelCardId: String? = null
 )
 
-@Serializable
-data class RefuelingResponse(
-    val refuelingId: String,
-    val vehicleId: String,
-    val vehicleName: String,
-    val vehicleLicensePlate: String?,
-    val gasStationId: String,
-    val gasStationAddress: String,
-    val fuelTypeId: String,
-    val fuelTypeName: String,
-    val volume: Double,
-    val pricePerLiter: Double,
-    val totalSum: Double,
-    val refuelDate: String,
-    val fuelCardId: String?
-)
-
 // RefuelingDto - используется в HistoryScreen
 @Serializable
 data class RefuelingDto(

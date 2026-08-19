@@ -3,16 +3,19 @@ package com.methane.eco.trans.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.methane.eco.trans.data.dto.VehicleDto
+import com.methane.eco.trans.domain.model.RefuelingRecord
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
+import com.methane.eco.trans.domain.usecase.ProfileUseCase
 import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
 import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenEvent
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenUIState
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,13 +25,39 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class ProfileViewModel(
-
-) {
+    val profileUseCase: ProfileUseCase
+): ViewModel() {
     private val _uiState = MutableStateFlow(ProfileScreenUIState())
     val uiState: StateFlow<ProfileScreenUIState> = _uiState.asStateFlow()
 
     private val _events = Channel<ProfileScreenEvent>()
     val events = _events.receiveAsFlow()
+
+
+    private fun loadUserProfile(){
+        viewModelScope.launch{
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try{
+                //имя_фамилия
+                val profile = profileUseCase.getUserProfile()
+                //список_автомобилей
+                val vehicles = profileUseCase.getUserVehicles()
+                //история_пользователя
+                val history = profileUseCase.getUserRefuelingHistory()
+                //обновление_состояний
+                _uiState.value = _uiState.value.copy(
+                    userName = profile.name,
+                    userSurname = profile.surname,
+                    userVehicles = vehicles,
+                    userHistory = history,
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                _events.send(ProfileScreenEvent.ShowSnackbar("Ошибка загрузки данных: ${e.message}"))
+            }
+        }
+    }
 
     //сеттеры
     fun onUserNameChanged(newUserName: String){
@@ -43,7 +72,7 @@ class ProfileViewModel(
         )
     }
 
-    fun onUserHistoryChanged(newUserHistory: Map<String, String>){
+    fun onUserHistoryChanged(newUserHistory: Map<String, List<RefuelingRecord>>){
         _uiState.value = _uiState.value.copy(
             userHistory = newUserHistory
         )
