@@ -43,6 +43,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.methane.eco.trans.theme.CustomGrey
@@ -56,6 +59,12 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.methane.eco.trans.R
+import com.methane.eco.trans.data.local.TokenStorage
+import com.methane.eco.trans.data.repository.AuthRepositoryImpl
+import com.methane.eco.trans.domain.usecase.AuthUseCase
+import com.methane.eco.trans.domain.usecase.ValidationUseCase
+import com.methane.eco.trans.presentation.viewmodel.ProfileViewModel
+import com.methane.eco.trans.presentation.viewmodel.RegViewModel
 import com.methane.eco.trans.segoe_ui
 import kotlinx.coroutines.launch
 import java.util.Calendar

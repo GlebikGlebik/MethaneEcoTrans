@@ -65,7 +65,7 @@ class MainScreenViewModel(
         _uiState.value = _uiState.value.copy(showRefuelDialog = show)
     }
 
-    // ✅ НОВОЕ: Сеттер для ввода номера нового авто
+    // Сеттер для ввода номера нового авто
     fun onNewVehiclePlateChanged(plate: String) {
         if (plate.length <= 15) {
             _uiState.value = _uiState.value.copy(newVehiclePlate = plate)
