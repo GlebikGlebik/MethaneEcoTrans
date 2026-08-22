@@ -1,9 +1,11 @@
 package com.methane.eco.trans.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.methane.eco.trans.data.dto.RefuelingDto
+import com.methane.eco.trans.data.dto.RefuelingHistoryResponse
 import com.methane.eco.trans.data.dto.VehicleDto
-import com.methane.eco.trans.domain.model.RefuelingRecord
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
@@ -14,6 +16,7 @@ import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
 import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenEvent
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenUIState
+import io.ktor.client.call.body
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,29 +36,54 @@ class ProfileViewModel(
     private val _events = Channel<ProfileScreenEvent>()
     val events = _events.receiveAsFlow()
 
+    init{
+        try{
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            loadUserProfile()
+            loadUserHistory()
+            loadUserVehicles()
+        } catch (e: Exception){
+            Log.e("MainRepository", "Ошибка получения данных пользователя: ${e.message}", e)
+        }
+
+
+    }
 
     private fun loadUserProfile(){
+        viewModelScope.launch {
+            val profile = profileUseCase.getUserProfile()
+        }
+    }
+
+    private fun loadUserHistory(){
+        viewModelScope.launch {
+            profileUseCase.getUserRefuelingHistory().fold(
+                onSuccess = { history ->
+                    _uiState.value = _uiState.value.copy(
+                        userHistory = history.refuelings
+                    )
+                },
+                onFailure = { error ->
+                    _events.send(ProfileScreenEvent.ShowSnackbar("${error.message}"))
+                }
+            )
+        }
+    }
+
+    private fun loadUserVehicles(){
         viewModelScope.launch{
             _uiState.value = _uiState.value.copy(isLoading = true)
-            try{
-                //имя_фамилия
-                val profile = profileUseCase.getUserProfile()
-                //список_автомобилей
-                val vehicles = profileUseCase.getUserVehicles()
-                //история_пользователя
-                val history = profileUseCase.getUserRefuelingHistory()
-                //обновление_состояний
-                _uiState.value = _uiState.value.copy(
-                    userName = profile.firstName,
-                    userSurname = profile.secondName,
-                    userVehicles = vehicles,
-                    userHistory = history,
-                    isLoading = false`
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false)
-                _events.send(ProfileScreenEvent.ShowSnackbar("Ошибка загрузки данных: ${e.message}"))
-            }
+            //получаем_список_автомобилей
+            profileUseCase.getUserVehicles().fold(
+                onSuccess = { vehicles ->
+                    _uiState.value = _uiState.value.copy(
+                        userVehicles = vehicles
+                    )
+                },
+                onFailure = { error ->
+                    _events.send(ProfileScreenEvent.ShowSnackbar("${error.message}"))
+                }
+            )
         }
     }
 
@@ -72,7 +100,7 @@ class ProfileViewModel(
         )
     }
 
-    fun onUserHistoryChanged(newUserHistory: Map<String, List<RefuelingRecord>>){
+    fun onUserHistoryChanged(newUserHistory: List<RefuelingDto> ){
         _uiState.value = _uiState.value.copy(
             userHistory = newUserHistory
         )
@@ -84,7 +112,7 @@ class ProfileViewModel(
         )
     }
 
-    fun onUserVehiclesChanged(newUserVehicles: List<String>){
+    fun onUserVehiclesChanged(newUserVehicles: List<VehicleDto>){
         _uiState.value = _uiState.value.copy(
             userVehicles = newUserVehicles
         )
