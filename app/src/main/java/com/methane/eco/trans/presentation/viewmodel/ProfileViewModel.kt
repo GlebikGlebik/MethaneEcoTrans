@@ -46,11 +46,11 @@ class ProfileViewModel(
                 val history = profileUseCase.getUserRefuelingHistory()
                 //обновление_состояний
                 _uiState.value = _uiState.value.copy(
-                    userName = profile.name,
-                    userSurname = profile.surname,
+                    userName = profile.firstName,
+                    userSurname = profile.secondName,
                     userVehicles = vehicles,
                     userHistory = history,
-                    isLoading = false
+                    isLoading = false`
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false)
