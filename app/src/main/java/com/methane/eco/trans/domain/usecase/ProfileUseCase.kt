@@ -5,9 +5,6 @@ import com.met.server.data.dto.VehicleResponse
 import com.methane.eco.trans.data.dto.RefuelingHistoryResponse
 import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.data.repository.MainRepository
-import com.methane.eco.trans.domain.model.RefuelingRecord
-import com.methane.eco.trans.domain.model.UserProfile
-import com.methane.eco.trans.domain.model.VehicleStats
 import com.methane.eco.trans.domain.repository.ProfileRepository
 import java.time.LocalDate
 
