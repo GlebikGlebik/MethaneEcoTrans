@@ -12,17 +12,6 @@ data class UserProfileResponse(
     val phone: String?
 )
 
-// DTO для транспортных средств
-@Serializable
-data class VehicleRequest(
-    val name: String,
-    val licensePlate: String?,
-    val vinNumber: String,
-    val model: String,
-    val year: Int?,
-    val mileage: Double?
-)
-
 @Serializable
 data class VehicleResponse(
     val vehicleId: String,
@@ -33,11 +22,6 @@ data class VehicleResponse(
     val year: Int?,
     val mileage: Double?,
     val createdAt: String
-)
-
-@Serializable
-data class VehiclesListResponse(
-    val vehicles: List<VehicleResponse>
 )
 
 // DTO для заправки
