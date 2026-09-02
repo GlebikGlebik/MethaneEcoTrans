@@ -47,7 +47,6 @@ import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
-import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
 
 @Composable
 fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = viewModel(

@@ -115,6 +115,4 @@ dependencies {
     implementation("com.github.madrapps:plot:0.1.1")
     implementation("com.patrykandpatrick.vico:compose:1.12.0")
     implementation("com.patrykandpatrick.vico:core:1.12.0")
-    // JDBC драйвер
-    implementation("org.postgresql:postgresql:42.7.7")
 }

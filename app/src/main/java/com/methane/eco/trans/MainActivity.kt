@@ -38,7 +38,6 @@ class MainActivity : ComponentActivity(){
                     composable("ProfileScreen") { ProfileScreen(navController) }
                     composable("HistoryScreen") { HistoryScreen(navController) }
                 }
-
             }
         }
     }
