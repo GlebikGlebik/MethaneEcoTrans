@@ -1,1 +1,1 @@
-This is my client-code for my main PET-project
+This is client-code for my main PET-project.
