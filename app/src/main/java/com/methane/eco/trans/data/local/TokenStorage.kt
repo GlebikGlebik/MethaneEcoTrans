@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-// Расширение для создания DataStore
+
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
 class TokenStorage(context: Context) {
@@ -49,6 +49,14 @@ class TokenStorage(context: Context) {
     // Получение данных пользователя
     val userId: Flow<String?> = dataStore.data.map { preferences ->
         preferences[USER_ID]
+    }
+
+    val userFirstName: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[USER_FIRST_NAME]
+    }
+
+    val userLastName: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[USER_LAST_NAME]
     }
 
     val userEmail: Flow<String?> = dataStore.data.map { preferences ->

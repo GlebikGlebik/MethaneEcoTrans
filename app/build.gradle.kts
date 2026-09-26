@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.met"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -115,4 +115,16 @@ dependencies {
     implementation("com.github.madrapps:plot:0.1.1")
     implementation("com.patrykandpatrick.vico:compose:1.12.0")
     implementation("com.patrykandpatrick.vico:core:1.12.0")
+    //Fragment
+    val fragment_version = "1.9.0"
+    // Fragment Java language implementation
+    implementation("androidx.fragment:fragment:$fragment_version")
+    // Fragment Kotlin
+    implementation("androidx.fragment:fragment-ktx:$fragment_version")
+    // Fragment Compose
+    implementation("androidx.fragment:fragment-compose:$fragment_version")
+    // Fragment Testing Fragments in Isolation
+    debugImplementation("androidx.fragment:fragment-testing:$fragment_version")
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
 }

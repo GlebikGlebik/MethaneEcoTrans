@@ -1,66 +1,57 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.methane.eco.trans.presentation.mainscreen
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.methane.eco.trans.R
-import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
@@ -68,19 +59,15 @@ import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
-import com.methane.eco.trans.isDateValid
 import com.methane.eco.trans.presentation.viewmodel.MainScreenViewModel
 import com.methane.eco.trans.segoe_ui
+import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomDeepOrange
 import com.methane.eco.trans.theme.CustomEnterBarColor
-import com.methane.eco.trans.theme.CustomErrorBarBackgroundColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
-import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun MainScreen(
@@ -103,7 +90,8 @@ fun MainScreen(
                     addVehicleUseCase,
                     deleteVehicleUseCase,
                     addRefuelingUseCase,
-                    getRefuelingHistoryUseCase
+                    getRefuelingHistoryUseCase,
+                    tokenStorage
                 ) as T
             }
         }
@@ -111,470 +99,409 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
 
     // Обработка событий
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MainScreenEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(event.message)
-                }
-                is MainScreenEvent.NavigateToHistoryScreen -> {
-                    navController.navigate("HistoryScreen")
-                }
-                is MainScreenEvent.NavigateToProfileScreen -> {
-                    navController.navigate("ProfileScreen")
-                }
+                is MainScreenEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is MainScreenEvent.NavigateToHistoryScreen -> navController.navigate("HistoryScreen")
+                is MainScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
+                is MainScreenEvent.NavigateToSettingsScreen -> navController.navigate("SettingsScreen")
+                is MainScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
+                is MainScreenEvent.NavigateToContactsScreen -> navController.navigate("ContactsScreen")
+                is MainScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
             }
         }
     }
+    Scaffold(
+        containerColor = CustomTrafficWhite,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            HomeBottomNavBar(
+                onContactsClick = viewModel::onContactsClicked,
+                onHistoryClick = viewModel::onHistoryClicked,
+                onQrClick = viewModel::onQrClicked,
+                onProfileClick = viewModel::onProfileClicked,
+                onMoreClick = viewModel::onMoreClicked
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(CustomTrafficWhite),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + 12.dp
+            )
+        ) {
+            item {
+                HomeHeader(
+                    userFullName = uiState.userFullName,
+                    onSettingsClick = viewModel::onSettingsClicked
+                )
+            }
 
-    BoxWithConstraints(
+            item {
+                Spacer(Modifier.height(4.dp))
+                LoyaltyCardBlock(
+                    cardNumber = uiState.discountCardID,
+                    discountAmount = uiState.discountAmount
+                )
+            }
+
+            item {
+                SectionTitle("Новости")
+                HomeActionRow(items = uiState.newsItems, onItemClick = viewModel::onActionItemClicked)
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
+                SectionTitle("Сервисы")
+                HomeActionRow(items = uiState.serviceItems, onItemClick = viewModel::onActionItemClicked)
+            }
+
+            item {
+                Spacer(Modifier.height(20.dp))
+                EcoStatsBlock(summary = uiState.ecoStatsSummary)
+                Spacer(Modifier.height(20.dp))
+            }
+        }
+    }
+}
+
+// ============================== Шапка ==============================
+
+@Composable
+private fun HomeHeader(userFullName: String, onSettingsClick: () -> Unit) {
+    Row(
         modifier = Modifier
-            .fillMaxSize()
-            .background(color = CustomTrafficWhite)
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val boxWidth = this.maxWidth
-        val boxHeight = this.maxHeight
-
-        // Кнопка добавить заправку
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = boxWidth / 10,
-                    end = boxWidth / 10,
-                    top = boxHeight / 18 * 9 - 12.dp,
-                    bottom = boxHeight / 18 * 7
-                )
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // TODO: добавить реальный логотип в drawable (ic_logo)
             Box(
                 modifier = Modifier
-                    .size(boxWidth / 10 * 8, boxHeight / 18 * 1)
-                    .background(color = CustomCarpiBlue, shape = RoundedCornerShape(15.dp))
-                    .clickable { viewModel.onShowRefuelDialogChanged(true) }
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(CustomCarpiBlue),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Добавить заправку",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = CustomTrafficWhite,
-                    fontFamily = segoe_ui,
-                    fontSize = 16.sp
-                )
+                Text("сн", color = CustomTrafficWhite, fontFamily = segoe_ui_bold, fontSize = 14.sp)
             }
-        }
-
-        // Диалог добавления заправки
-        if (uiState.showRefuelDialog) {
-            Dialog(
-                onDismissRequest = { viewModel.onShowRefuelDialogChanged(false) },
-                properties = DialogProperties(
-                    usePlatformDefaultWidth = false,
-                    dismissOnClickOutside = true
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .width(320.dp)
-                        .background(CustomTrafficWhite, RoundedCornerShape(15.dp))
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    // БЛОК 1: ДОБАВЛЕНИЕ ЗАПРАВКИ
-                    Text(
-                        text = "Новая заправка",
-                        color = CustomCarpiBlue,
-                        fontFamily = segoe_ui,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    // Выбор автомобиля
-                    VehicleDropdown(
-                        vehicles = uiState.userVehicles,
-                        selectedId = uiState.currentVehicleId,
-                        onSelected = { viewModel.onCurrentVehicleIdChanged(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Дата и Объем
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DialogTextField(
-                            value = uiState.date,
-                            onValueChange = { viewModel.onDateChanged(it) },
-                            placeholder = "дд.мм.гггг",
-                            modifier = Modifier.weight(1f)
-                        )
-                        DialogTextField(
-                            value = uiState.volume,
-                            onValueChange = { viewModel.onVolumeChanged(it) },
-                            placeholder = "Объем (л)",
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Сумма и Топливная карта
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DialogTextField(
-                            value = uiState.sum,
-                            onValueChange = { viewModel.onSumChanged(it) },
-                            placeholder = "Сумма (₽)",
-                            modifier = Modifier.weight(1f)
-                        )
-                        DialogTextField(
-                            value = uiState.fuelCardNumber,
-                            onValueChange = { viewModel.onFuelCardChanged(it) },
-                            placeholder = "№ Карты (опц.)",
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Кнопка сохранения заправки
-                    DialogButton(
-                        text = "Добавить заправку",
-                        isLoading = uiState.isLoading,
-                        onClick = {
-                            if (uiState.date.isBlank() || uiState.volume.isBlank() || uiState.sum.isBlank()) {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Заполните обязательные поля")
-                                }
-                                return@DialogButton
-                            }
-                            if (!isDateValid(uiState.date)) {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Некорректный формат даты")
-                                }
-                                return@DialogButton
-                            }
-                            if (uiState.currentVehicleId.isBlank()) {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Выберите автомобиль")
-                                }
-                                return@DialogButton
-                            }
-                            val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-                            val localDate = LocalDate.parse(uiState.date, dateFormatter)
-                            val isoDate = localDate.atStartOfDay().toString()  // "2026-06-25T00:00:00"
-
-                            viewModel.addRefueling()
-                        }
-                    )
-
-                    // Разделитель
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        thickness = 1.dp,
-                        color = CustomGrey.copy(alpha = 0.2f)
-                    )
-
-                    // БЛОК 2: УПРАВЛЕНИЕ АВТОПАРКОМ
-                    Text(
-                        text = "Мои автомобили",
-                        color = CustomCarpiBlue,
-                        fontFamily = segoe_ui,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // Поле ввода и кнопки +/-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        DialogTextField(
-                            value = uiState.newVehiclePlate,
-                            onValueChange = { viewModel.onNewVehiclePlateChanged(it) },
-                            placeholder = "Номер авто",
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        // Кнопка +
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CustomCarpiBlue, RoundedCornerShape(8.dp))
-                                .clickable { viewModel.addNewVehicle() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "＋",
-                                color = CustomTrafficWhite,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        // Кнопка -
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CustomErrorBarBackgroundColor, RoundedCornerShape(8.dp))
-                                .clickable { viewModel.deleteVehicleByPlate() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "－",
-                                color = CustomTrafficWhite,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Список автомобилей
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 150.dp)
-                            .background(CustomEnterBarColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
-                    ) {
-                        if (uiState.userVehicles.isEmpty()) {
-                            Text(
-                                text = "Список пуст",
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .padding(8.dp),
-                                color = CustomGrey.copy(alpha = 0.6f),
-                                fontSize = 12.sp
-                            )
-                        } else {
-                            LazyColumn(modifier = Modifier.padding(8.dp)) {
-                                items(uiState.userVehicles) { vehicle ->
-                                    Text(
-                                        text = vehicle.licensePlate ?: vehicle.name,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp)
-                                            .clickable {
-                                                viewModel.onCurrentVehicleIdChanged(vehicle.vehicleId)
-                                            },
-                                        color = if (vehicle.vehicleId == uiState.currentVehicleId)
-                                            CustomCarpiBlue else CustomGrey,
-                                        fontWeight = if (vehicle.vehicleId == uiState.currentVehicleId)
-                                            FontWeight.Bold else FontWeight.Normal,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Поле с навигацией
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = boxHeight / 18 * 16,
-                    bottom = boxHeight / 18 * 1 - 12.dp
-                )
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        horizontal = boxWidth / 10,
-                        vertical = 12.dp
-                    )
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(15.dp),
-                    border = BorderStroke(1.dp, CustomDeepOrange),
-                    color = CustomTrafficWhite
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        listOf(
-                            R.drawable.vector_telegram to "contacts",
-                            R.drawable.vector_history to "history",
-                            R.drawable.vector_profile to "profile"
-                        ).forEach { (iconRes, description) ->
-                            Box(
-                                modifier = Modifier.size(24.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = iconRes),
-                                    contentDescription = "${description}Icon",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable {
-                                            when (description) {
-                                                "profile" -> viewModel.onProfileClicked()
-                                                "history" -> viewModel.onHistoryClicked()
-                                            }
-                                        },
-                                    tint = CustomGrey
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
-    }
-}
-
-// --- Вспомогательные компоненты для Диалога ---
-
-@Composable
-fun DialogTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier
-) {
-    var isFocused by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier
-            .height(40.dp)
-            .background(CustomEnterBarColor, RoundedCornerShape(8.dp))
-    ) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .onFocusChanged { focusState -> isFocused = focusState.isFocused },
-            textStyle = TextStyle(
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = userFullName.ifBlank { "Гость" },
                 color = CustomGrey,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
-            ),
-            singleLine = true,
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (value.isEmpty() && !isFocused) {
-                        Text(
-                            placeholder,
-                            color = CustomGrey.copy(alpha = 0.5f),
-                            fontSize = 12.sp,
-                            fontFamily = segoe_ui
-                        )
-                    }
-                    innerTextField()
-                }
-            }
-        )
+                fontFamily = segoe_ui,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+        IconButton(onClick = onSettingsClick) {
+            Icon(
+                painter = painterResource(id = R.drawable.vector_settings),
+                contentDescription = "settingsIcon",
+                tint = CustomTurquoiseBlue,
+                modifier = Modifier.size(28.dp)
+            )
+        }
     }
 }
 
+// ========================= Карта лояльности =========================
+
 @Composable
-fun DialogButton(
-    text: String,
-    isLoading: Boolean,
-    onClick: () -> Unit
-) {
+private fun LoyaltyCardBlock(cardNumber: String, discountAmount: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .background(CustomCarpiBlue, RoundedCornerShape(8.dp))
-            .clickable(enabled = !isLoading, onClick = onClick),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
+            .background(CustomTrafficWhite)
+            .circuitBackground(lineColor = CustomTurquoiseBlue)
+            .padding(20.dp)
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = CustomTrafficWhite,
-                strokeWidth = 2.dp
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.vector_qr),
+                    contentDescription = null,
+                    tint = CustomCarpiBlue,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("МЭТР", color = CustomCarpiBlue, fontFamily = segoe_ui_bold, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "Карта постоянного клиента",
+                    color = CustomGrey,
+                    fontFamily = segoe_ui,
+                    fontSize = 12.sp
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                QrPlaceholder(size = 96.dp)
+
+                Column {
+                    Text(
+                        "Номер карты",
+                        color = CustomGrey.copy(alpha = 0.6f),
+                        fontFamily = segoe_ui,
+                        fontSize = 11.sp
+                    )
+                    Text(
+                        formatCardNumber(cardNumber),
+                        color = CustomCarpiBlue,
+                        fontFamily = segoe_ui_bold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        "текущая скидка",
+                        color = CustomGrey.copy(alpha = 0.6f),
+                        fontFamily = segoe_ui,
+                        fontSize = 11.sp
+                    )
+                    Text(
+                        "$discountAmount% скидка",
+                        color = CustomDeepOrange,
+                        fontFamily = segoe_ui_bold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun formatCardNumber(raw: String): String {
+    if (raw.isBlank()) return "•••• ••••"
+    return raw.chunked(4).joinToString(" ")
+}
+
+/**
+ * Стилизованная заглушка QR-кода (три угловых "маркера", как у настоящего QR).
+ * Для реального сканируемого кода нужна библиотека генерации, например
+ * com.google.zxing:core — она отдаёт готовый ImageBitmap по строке (токену
+ * карты), который можно нарисовать через Image(bitmap = ...) вместо этого
+ * Canvas-плейсхолдера.
+ */
+@Composable
+private fun QrPlaceholder(size: Dp) {
+    Canvas(modifier = Modifier.size(size)) {
+        val block = this.size.width / 5f
+        val markerColor = androidx.compose.ui.graphics.Color(0xFF045195)
+
+        fun marker(cx: Float, cy: Float) {
+            drawRect(markerColor, topLeft = Offset(cx, cy), size = Size(block * 1.4f, block * 1.4f))
+            drawRect(
+                androidx.compose.ui.graphics.Color.White,
+                topLeft = Offset(cx + block * 0.35f, cy + block * 0.35f),
+                size = Size(block * 0.7f, block * 0.7f)
+            )
+        }
+
+        marker(0f, 0f)
+        marker(this.size.width - block * 1.4f, 0f)
+        marker(0f, this.size.height - block * 1.4f)
+        drawRect(
+            markerColor,
+            topLeft = Offset(this.size.width - block * 1.4f, this.size.height - block * 1.4f),
+            size = Size(block * 0.6f, block * 0.6f)
+        )
+    }
+}
+
+// ===================== Заголовки секций и карточки =====================
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        color = CustomTurquoiseBlue,
+        fontFamily = segoe_ui_bold,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+    )
+}
+
+@Composable
+private fun HomeActionRow(items: List<HomeActionItem>, onItemClick: (HomeActionItem) -> Unit) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        items(items = items, key = { it.id }) { item ->
+            HomeActionCard(item = item, onClick = { onItemClick(item) })
+        }
+    }
+}
+
+@Composable
+private fun HomeActionCard(item: HomeActionItem, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(168.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(16.dp))
+            .background(CustomTrafficWhite)
+            .padding(16.dp)
+    ) {
+        if (item.imageUrl != null) {
+            // TODO: когда появятся реальные картинки — заменить на AsyncImage
+            // из Coil (io.coil-kt:coil-compose), например:
+            // AsyncImage(model = item.imageUrl, contentDescription = item.title,
+            //   modifier = Modifier.fillMaxWidth().height(88.dp).clip(RoundedCornerShape(10.dp)),
+            //   contentScale = ContentScale.Crop)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(CustomEnterBarColor)
             )
         } else {
-            Text(
-                text,
-                color = CustomTrafficWhite,
-                fontFamily = segoe_ui,
-                fontSize = 14.sp
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(CustomTurquoiseBlue.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = item.icon ?: R.drawable.vector_news),
+                    contentDescription = item.title,
+                    tint = CustomCarpiBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = item.title,
+            color = CustomGrey,
+            fontFamily = segoe_ui_bold,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            lineHeight = 18.sp
+        )
+
+        Spacer(Modifier.height(14.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(34.dp)
+                .clip(RoundedCornerShape(50))
+                .background(CustomTurquoiseBlue)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("подробнее", color = CustomTrafficWhite, fontFamily = segoe_ui, fontSize = 12.sp)
+        }
+    }
+}
+
+// ============================ Эко-блок ============================
+
+@Composable
+private fun EcoStatsBlock(summary: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
+            .background(CustomTrafficWhite)
+            .leafPatternBackground(leafColor = CustomTurquoiseBlue)
+            .padding(18.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(CustomTurquoiseBlue),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.vector_eco),
+                contentDescription = null,
+                tint = CustomTrafficWhite,
+                modifier = Modifier.size(26.dp)
             )
+        }
+        Spacer(Modifier.width(14.dp))
+        Text(
+            text = summary,
+            color = CustomCarpiBlue,
+            fontFamily = segoe_ui_bold,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            lineHeight = 18.sp
+        )
+    }
+}
+
+// ========================= Нижняя навигация =========================
+
+@Composable
+private fun HomeBottomNavBar(
+    onContactsClick: () -> Unit,
+    onHistoryClick: () -> Unit,
+    onQrClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onMoreClick: () -> Unit
+) {
+    Surface(color = CustomTurquoiseBlue, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(vertical = 14.dp, horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Переиспользуем уже существующую иконку контактов (vector_telegram),
+            // чтобы не плодить дубли ассетов там, где смысл совпадает.
+            NavIcon(R.drawable.vector_telegram, "contactsIcon", onContactsClick)
+            NavIcon(R.drawable.vector_history, "historyIcon", onHistoryClick)
+            NavIcon(R.drawable.vector_qr, "qrIcon", onQrClick)
+            NavIcon(R.drawable.vector_profile, "profileIcon", onProfileClick)
+            NavIcon(R.drawable.vector_more, "moreIcon", onMoreClick)
         }
     }
 }
 
 @Composable
-fun VehicleDropdown(
-    vehicles: List<VehicleDto>,
-    selectedId: String,
-    onSelected: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
-    val selectedName = vehicles.find { it.vehicleId == selectedId }?.let {
-        it.licensePlate ?: it.name
-    }
-
-    Box(
+private fun NavIcon(iconRes: Int, description: String, onClick: () -> Unit) {
+    Icon(
+        painter = painterResource(id = iconRes),
+        contentDescription = description,
+        tint = CustomTrafficWhite,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp)
-            .background(CustomTurquoiseBlue, RoundedCornerShape(8.dp))
-            .clickable {
-                focusManager.clearFocus()
-                expanded = true
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = selectedName ?: "Выберите автомобиль ",
-            color = CustomTrafficWhite,
-            fontFamily = segoe_ui,
-            fontSize = 14.sp
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(CustomTurquoiseBlue)
-        ) {
-            if (vehicles.isEmpty()) {
-                DropdownMenuItem(
-                    text = { Text("Нет авто", color = CustomTrafficWhite) },
-                    onClick = { expanded = false }
-                )
-            } else {
-                vehicles.forEach { v ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                v.licensePlate ?: v.name,
-                                color = CustomTrafficWhite
-                            )
-                        },
-                        onClick = {
-                            onSelected(v.vehicleId)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
-    }
+            .size(26.dp)
+            .clickable(onClick = onClick)
+    )
 }
+
+
