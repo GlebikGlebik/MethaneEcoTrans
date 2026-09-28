@@ -238,8 +238,9 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
                     .clickable {
-                        if (!uiState.isLoading){
-                            viewModel.onEnterClicked() }
+                        navController.navigate("MainScreen")
+                        //if (!uiState.isLoading){
+                        //    viewModel.onEnterClicked() }
                     }
             ) {
                 if (uiState.isLoading) {

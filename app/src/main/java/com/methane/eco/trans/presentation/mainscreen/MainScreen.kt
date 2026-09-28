@@ -3,9 +3,11 @@
 package com.methane.eco.trans.presentation.mainscreen
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -109,7 +112,7 @@ fun MainScreen(
                 is MainScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
                 is MainScreenEvent.NavigateToSettingsScreen -> navController.navigate("SettingsScreen")
                 is MainScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
-                is MainScreenEvent.NavigateToContactsScreen -> navController.navigate("ContactsScreen")
+                is MainScreenEvent.NavigateToHomeScreen -> navController.navigate("MainScreen")
                 is MainScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
             }
         }
@@ -119,7 +122,7 @@ fun MainScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             HomeBottomNavBar(
-                onContactsClick = viewModel::onContactsClicked,
+                onHomeClick = viewModel::onHomeClicked,
                 onHistoryClick = viewModel::onHistoryClicked,
                 onQrClick = viewModel::onQrClicked,
                 onProfileClick = viewModel::onProfileClicked,
@@ -144,14 +147,15 @@ fun MainScreen(
             }
 
             item {
-                Spacer(Modifier.height(4.dp))
-                LoyaltyCardBlock(
+                Spacer(Modifier.height(8.dp))
+                CardBlock(
                     cardNumber = uiState.discountCardID,
                     discountAmount = uiState.discountAmount
                 )
             }
 
             item {
+                Spacer(Modifier.height(8.dp))
                 SectionTitle("Новости")
                 HomeActionRow(items = uiState.newsItems, onItemClick = viewModel::onActionItemClicked)
             }
@@ -163,7 +167,8 @@ fun MainScreen(
             }
 
             item {
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(8.dp))
+                SectionTitle("Забота о природе")
                 EcoStatsBlock(summary = uiState.ecoStatsSummary)
                 Spacer(Modifier.height(20.dp))
             }
@@ -178,7 +183,7 @@ private fun HomeHeader(userFullName: String, onSettingsClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -213,36 +218,28 @@ private fun HomeHeader(userFullName: String, onSettingsClick: () -> Unit) {
     }
 }
 
-// ========================= Карта лояльности =========================
+//Дисконтная карта
 
 @Composable
-private fun LoyaltyCardBlock(cardNumber: String, discountAmount: Int) {
+private fun CardBlock(cardNumber: String, discountAmount: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(20.dp))
-            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
+            .border(2.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
             .background(CustomTrafficWhite)
-            .circuitBackground(lineColor = CustomTurquoiseBlue)
             .padding(20.dp)
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.vector_qr),
-                    contentDescription = null,
-                    tint = CustomCarpiBlue,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(6.dp))
                 Text("МЭТР", color = CustomCarpiBlue, fontFamily = segoe_ui_bold, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Spacer(Modifier.width(10.dp))
                 Text(
                     "Карта постоянного клиента",
                     color = CustomGrey,
                     fontFamily = segoe_ui,
-                    fontSize = 12.sp
+                    fontSize = 16.sp
                 )
             }
 
@@ -250,14 +247,22 @@ private fun LoyaltyCardBlock(cardNumber: String, discountAmount: Int) {
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(18.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                QrPlaceholder(size = 96.dp)
+                //TODO: QR должен был выровнен по левому краю
+                Icon(
+                    painter = painterResource(id = R.drawable.vector_qr),
+                    contentDescription = "material_icon",
+                    tint = CustomCarpiBlue,
+                    modifier = Modifier.size(128.dp)
+                )
+
+                Spacer(Modifier.height(8.dp))
 
                 Column {
                     Text(
                         "Номер карты",
-                        color = CustomGrey.copy(alpha = 0.6f),
+                        color = CustomGrey,
                         fontFamily = segoe_ui,
                         fontSize = 11.sp
                     )
@@ -273,7 +278,7 @@ private fun LoyaltyCardBlock(cardNumber: String, discountAmount: Int) {
 
                     Text(
                         "текущая скидка",
-                        color = CustomGrey.copy(alpha = 0.6f),
+                        color = CustomGrey,
                         fontFamily = segoe_ui,
                         fontSize = 11.sp
                     )
@@ -358,29 +363,17 @@ private fun HomeActionRow(items: List<HomeActionItem>, onItemClick: (HomeActionI
 private fun HomeActionCard(item: HomeActionItem, onClick: () -> Unit) {
     Column(
         modifier = Modifier
-            .width(168.dp)
+            .width(224.dp)
             .clip(RoundedCornerShape(16.dp))
-            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(16.dp))
+            .border(2.5.dp, CustomTurquoiseBlue, RoundedCornerShape(16.dp))
             .background(CustomTrafficWhite)
             .padding(16.dp)
     ) {
-        if (item.imageUrl != null) {
-            // TODO: когда появятся реальные картинки — заменить на AsyncImage
-            // из Coil (io.coil-kt:coil-compose), например:
-            // AsyncImage(model = item.imageUrl, contentDescription = item.title,
-            //   modifier = Modifier.fillMaxWidth().height(88.dp).clip(RoundedCornerShape(10.dp)),
-            //   contentScale = ContentScale.Crop)
+        // TODO: когда появятся картинки — заменим на AsyncImage
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(88.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(CustomEnterBarColor)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
+                    .size(45.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(CustomTurquoiseBlue.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
@@ -389,22 +382,23 @@ private fun HomeActionCard(item: HomeActionItem, onClick: () -> Unit) {
                     painter = painterResource(id = item.icon ?: R.drawable.vector_news),
                     contentDescription = item.title,
                     tint = CustomCarpiBlue,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
+
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                text = item.title,
+                color = CustomGrey,
+                fontFamily = segoe_ui_bold,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
+                maxLines = 2,
+                textAlign = TextAlign.Left
+            )
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            text = item.title,
-            color = CustomGrey,
-            fontFamily = segoe_ui_bold,
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            lineHeight = 18.sp
-        )
-
         Spacer(Modifier.height(14.dp))
 
         Box(
@@ -421,7 +415,7 @@ private fun HomeActionCard(item: HomeActionItem, onClick: () -> Unit) {
     }
 }
 
-// ============================ Эко-блок ============================
+// эко-статистика
 
 @Composable
 private fun EcoStatsBlock(summary: String) {
@@ -430,7 +424,7 @@ private fun EcoStatsBlock(summary: String) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(20.dp))
-            .border(1.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
+            .border(2.5.dp, CustomTurquoiseBlue, RoundedCornerShape(20.dp))
             .background(CustomTrafficWhite)
             .leafPatternBackground(leafColor = CustomTurquoiseBlue)
             .padding(18.dp),
@@ -466,7 +460,7 @@ private fun EcoStatsBlock(summary: String) {
 
 @Composable
 private fun HomeBottomNavBar(
-    onContactsClick: () -> Unit,
+    onHomeClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onQrClick: () -> Unit,
     onProfileClick: () -> Unit,
@@ -481,9 +475,7 @@ private fun HomeBottomNavBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Переиспользуем уже существующую иконку контактов (vector_telegram),
-            // чтобы не плодить дубли ассетов там, где смысл совпадает.
-            NavIcon(R.drawable.vector_telegram, "contactsIcon", onContactsClick)
+            NavIcon(R.drawable.vector_home, "HomeIcon", onHomeClick)
             NavIcon(R.drawable.vector_history, "historyIcon", onHistoryClick)
             NavIcon(R.drawable.vector_qr, "qrIcon", onQrClick)
             NavIcon(R.drawable.vector_profile, "profileIcon", onProfileClick)

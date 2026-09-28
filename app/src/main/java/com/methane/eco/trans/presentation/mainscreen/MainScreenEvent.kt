@@ -6,6 +6,6 @@ sealed class MainScreenEvent {
     object NavigateToProfileScreen: MainScreenEvent()
     object NavigateToSettingsScreen: MainScreenEvent()
     object NavigateToQrScreen: MainScreenEvent()
-    object NavigateToContactsScreen: MainScreenEvent()
     object NavigateToMoreScreen: MainScreenEvent()
+    object NavigateToHomeScreen: MainScreenEvent()
 }

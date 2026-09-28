@@ -118,8 +118,8 @@ class MainScreenViewModel(
         viewModelScope.launch { _events.send(MainScreenEvent.NavigateToQrScreen) }
     }
 
-    fun onContactsClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToContactsScreen) }
+    fun onHomeClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToHomeScreen) }
     }
 
     fun onMoreClicked() {
