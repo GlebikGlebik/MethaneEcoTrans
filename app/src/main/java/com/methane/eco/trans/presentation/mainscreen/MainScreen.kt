@@ -3,11 +3,9 @@
 package com.methane.eco.trans.presentation.mainscreen
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,8 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -57,6 +53,7 @@ import androidx.navigation.NavController
 import com.methane.eco.trans.R
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
+import com.methane.eco.trans.domain.model.HomeActionItem
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
@@ -67,7 +64,6 @@ import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomCarpiBlue
 import com.methane.eco.trans.theme.CustomDeepOrange
-import com.methane.eco.trans.theme.CustomEnterBarColor
 import com.methane.eco.trans.theme.CustomGrey
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomTurquoiseBlue

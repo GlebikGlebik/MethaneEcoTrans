@@ -8,10 +8,9 @@ import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
-import com.methane.eco.trans.presentation.mainscreen.HomeActionItem
+import com.methane.eco.trans.domain.model.HomeActionItem
 import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
 import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
-import io.ktor.util.Hash.combine
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,6 +1,9 @@
 package com.methane.eco.trans.presentation.mainscreen
 
 import com.methane.eco.trans.data.dto.VehicleDto
+import com.methane.eco.trans.domain.model.HomeActionItem
+import com.methane.eco.trans.domain.model.defaultNewsItems
+import com.methane.eco.trans.domain.model.defaultServiceItems
 
 data class MainScreenUIState(
     val date: String = "",
