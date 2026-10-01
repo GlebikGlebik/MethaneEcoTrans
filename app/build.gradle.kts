@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.met"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -65,9 +65,6 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // AndroidX
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -115,4 +112,6 @@ dependencies {
     implementation("com.github.madrapps:plot:0.1.1")
     implementation("com.patrykandpatrick.vico:compose:1.12.0")
     implementation("com.patrykandpatrick.vico:core:1.12.0")
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
 }

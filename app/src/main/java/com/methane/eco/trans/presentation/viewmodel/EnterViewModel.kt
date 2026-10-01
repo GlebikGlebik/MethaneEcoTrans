@@ -45,6 +45,7 @@ class EnterViewModel(
     }
 
     fun onEnterClicked() {
+
         val currentState = _uiState.value
         viewModelScope.launch {
             onIsLoadingChanged(true)

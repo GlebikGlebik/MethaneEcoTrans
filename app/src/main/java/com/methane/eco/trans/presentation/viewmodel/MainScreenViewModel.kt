@@ -2,17 +2,20 @@ package com.methane.eco.trans.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
+import com.methane.eco.trans.domain.model.HomeActionItem
 import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
 import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -23,7 +26,8 @@ class MainScreenViewModel(
     private val addVehicleUseCase: AddVehicleUseCase,
     private val deleteVehicleUseCase: DeleteVehicleUseCase,
     private val addRefuelingUseCase: AddRefuelingUseCase,
-    private val getRefuelingHistoryUseCase: GetRefuelingHistoryUseCase
+    private val getRefuelingHistoryUseCase: GetRefuelingHistoryUseCase,
+    private val tokenStorage: TokenStorage
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainScreenUIState())
@@ -37,6 +41,28 @@ class MainScreenViewModel(
 
     init {
         loadVehicles()
+        loadUserHeader()
+    }
+
+    private fun loadUserHeader(){
+        viewModelScope.launch {
+            combine(
+                tokenStorage.userFirstName,
+                tokenStorage.userLastName,
+                tokenStorage.userId
+            ) { (firstName, lastName, userId) -> Triple(firstName, lastName, userId)}.collect{
+                (firstName, lastName, userId) ->
+                val fullName = listOfNotNull(lastName, firstName)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" ")
+
+                _uiState.value = _uiState.value.copy(
+                    userFullName = fullName.ifBlank { "Пользователь" }
+                    //TODO: здесь надо будет подгружать данные с бэка и брать инфу о дисконтной
+                    //TODO: карте по фио или id из ataStore
+                )
+            }
+        }
     }
 
 
@@ -72,16 +98,38 @@ class MainScreenViewModel(
         }
     }
 
-    // --- Навигация ---
+
+
+    // Навигация
     fun onProfileClicked() {
-        viewModelScope.launch {
-            _events.send(MainScreenEvent.NavigateToProfileScreen)
-        }
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToProfileScreen) }
     }
 
     fun onHistoryClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToHistoryScreen) }
+    }
+
+    fun onSettingsClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToSettingsScreen) }
+    }
+
+    fun onQrClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToQrScreen) }
+    }
+
+    fun onHomeClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToHomeScreen) }
+    }
+
+    fun onMoreClicked() {
+        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToMoreScreen) }
+    }
+
+    fun onActionItemClicked(item: HomeActionItem) {
         viewModelScope.launch {
-            _events.send(MainScreenEvent.NavigateToHistoryScreen)
+            // TODO: заменить на реальную навигацию к деталям новости/сервиса,
+            // когда появятся соответствующие экраны и маршруты в NavHost.
+            _events.send(MainScreenEvent.ShowSnackbar("Раздел скоро будет доступен!"))
         }
     }
 
