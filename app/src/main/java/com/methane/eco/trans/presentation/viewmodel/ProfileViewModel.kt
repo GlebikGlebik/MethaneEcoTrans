@@ -4,28 +4,16 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.methane.eco.trans.data.dto.RefuelingDto
-import com.methane.eco.trans.data.dto.RefuelingHistoryResponse
 import com.methane.eco.trans.data.dto.VehicleDto
-import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
-import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
-import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
-import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
-import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
 import com.methane.eco.trans.domain.usecase.ProfileUseCase
-import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
-import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenEvent
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreenUIState
-import io.ktor.client.call.body
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 class ProfileViewModel(
     val profileUseCase: ProfileUseCase

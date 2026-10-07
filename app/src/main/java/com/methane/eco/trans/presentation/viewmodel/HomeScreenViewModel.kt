@@ -9,8 +9,8 @@ import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
 import com.methane.eco.trans.domain.model.HomeActionItem
-import com.methane.eco.trans.presentation.mainscreen.MainScreenEvent
-import com.methane.eco.trans.presentation.mainscreen.MainScreenUIState
+import com.methane.eco.trans.presentation.homescreen.HomeScreenEvent
+import com.methane.eco.trans.presentation.homescreen.HomeScreenUIState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class MainScreenViewModel(
+class HomeScreenViewModel(
     private val getVehiclesUseCase: GetVehiclesUseCase,
     private val addVehicleUseCase: AddVehicleUseCase,
     private val deleteVehicleUseCase: DeleteVehicleUseCase,
@@ -30,10 +30,10 @@ class MainScreenViewModel(
     private val tokenStorage: TokenStorage
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MainScreenUIState())
-    val uiState: StateFlow<MainScreenUIState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(HomeScreenUIState())
+    val uiState: StateFlow<HomeScreenUIState> = _uiState.asStateFlow()
 
-    private val _events = Channel<MainScreenEvent>()
+    private val _events = Channel<HomeScreenEvent>()
     val events = _events.receiveAsFlow()
 
     // ⚠️ MOCK ДАННЫЕ ДЛЯ СЕРВЕРА
@@ -102,34 +102,33 @@ class MainScreenViewModel(
 
     // Навигация
     fun onProfileClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToProfileScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToProfileScreen) }
     }
 
     fun onHistoryClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToHistoryScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToHistoryScreen) }
     }
 
     fun onSettingsClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToSettingsScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToSettingsScreen) }
     }
 
     fun onQrClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToQrScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToQrScreen) }
     }
 
     fun onHomeClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToHomeScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToHomeScreen) }
     }
 
     fun onMoreClicked() {
-        viewModelScope.launch { _events.send(MainScreenEvent.NavigateToMoreScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToMoreScreen) }
     }
 
     fun onActionItemClicked(item: HomeActionItem) {
         viewModelScope.launch {
             // TODO: заменить на реальную навигацию к деталям новости/сервиса,
-            // когда появятся соответствующие экраны и маршруты в NavHost.
-            _events.send(MainScreenEvent.ShowSnackbar("Раздел скоро будет доступен!"))
+            _events.send(HomeScreenEvent.ShowSnackbar("Раздел скоро будет доступен!"))
         }
     }
 
@@ -145,19 +144,20 @@ class MainScreenViewModel(
                     )
                 },
                 onFailure = { error ->
-                    _events.send(MainScreenEvent.ShowSnackbar("Ошибка загрузки ТС: ${error.message}"))
+                    _events.send(HomeScreenEvent.ShowSnackbar("Ошибка загрузки ТС: ${error.message}"))
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
             )
         }
     }
 
+
     // Быстрое добавление ТС
     fun addNewVehicle() {
         val plate = _uiState.value.newVehiclePlate
         if (plate.isBlank()) {
             viewModelScope.launch {
-                _events.send(MainScreenEvent.ShowSnackbar("Введите номер авто"))
+                _events.send(HomeScreenEvent.ShowSnackbar("Введите номер авто"))
             }
             return
         }
@@ -178,7 +178,7 @@ class MainScreenViewModel(
                 mileage = null
             ).fold(
                 onSuccess = { message ->
-                    _events.send(MainScreenEvent.ShowSnackbar(message))
+                    _events.send(HomeScreenEvent.ShowSnackbar(message))
                     _uiState.value = _uiState.value.copy(
                         newVehiclePlate = "",
                         isLoading = false
@@ -186,7 +186,7 @@ class MainScreenViewModel(
                     loadVehicles() // Перезагружаем список
                 },
                 onFailure = { error ->
-                    _events.send(MainScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
+                    _events.send(HomeScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
             )
@@ -202,7 +202,7 @@ class MainScreenViewModel(
 
         if (vehicleToDelete == null) {
             viewModelScope.launch {
-                _events.send(MainScreenEvent.ShowSnackbar("Авто с таким номером не найдено"))
+                _events.send(HomeScreenEvent.ShowSnackbar("Авто с таким номером не найдено"))
             }
             return
         }
@@ -211,7 +211,7 @@ class MainScreenViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true)
             deleteVehicleUseCase(vehicleToDelete.vehicleId).fold(
                 onSuccess = {
-                    _events.send(MainScreenEvent.ShowSnackbar("Авто удалено"))
+                    _events.send(HomeScreenEvent.ShowSnackbar("Авто удалено"))
                     _uiState.value = _uiState.value.copy(
                         newVehiclePlate = "",
                         isLoading = false
@@ -223,7 +223,7 @@ class MainScreenViewModel(
                     loadVehicles()
                 },
                 onFailure = { error ->
-                    _events.send(MainScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
+                    _events.send(HomeScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
             )
@@ -240,7 +240,7 @@ class MainScreenViewModel(
             localDate.atStartOfDay().toString() // "2006-06-25T00:00:00"
         } catch (e: Exception) {
             viewModelScope.launch {
-                _events.send(MainScreenEvent.ShowSnackbar("Неверный формат даты"))
+                _events.send(HomeScreenEvent.ShowSnackbar("Неверный формат даты"))
             }
             _uiState.value = state.copy(isLoading = false)
             return
@@ -258,7 +258,7 @@ class MainScreenViewModel(
                 fuelCardId = state.fuelCardNumber.takeIf { it.isNotBlank() }
             ).fold(
                 onSuccess = { message ->
-                    _events.send(MainScreenEvent.ShowSnackbar(message))
+                    _events.send(HomeScreenEvent.ShowSnackbar(message))
                     _uiState.value = _uiState.value.copy(
                         date = "",
                         volume = "",
@@ -270,7 +270,7 @@ class MainScreenViewModel(
                     )
                 },
                 onFailure = { error ->
-                    _events.send(MainScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
+                    _events.send(HomeScreenEvent.ShowSnackbar("Ошибка: ${error.message}"))
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
             )

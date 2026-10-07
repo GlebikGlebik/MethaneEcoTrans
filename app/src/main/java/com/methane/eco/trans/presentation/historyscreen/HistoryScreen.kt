@@ -62,11 +62,11 @@ import com.methane.eco.trans.R
 import com.methane.eco.trans.data.dto.RefuelingDto
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
+import com.methane.eco.trans.domain.model.NavBarItem
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
 import com.methane.eco.trans.presentation.components.AppBottomNavBar
-import com.methane.eco.trans.presentation.components.NavBarItem
 import com.methane.eco.trans.presentation.viewmodel.HistoryViewModel
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
@@ -139,7 +139,7 @@ fun HistoryScreen(
         bottomBar = {
             AppBottomNavBar(
                 items = listOf(
-                    NavBarItem(R.drawable.vector_home, "homeIcon", onClick = viewModel::onMainClicked),
+                    NavBarItem(R.drawable.vector_home,"homeIcon",onClick = viewModel::onMainClicked),
                     NavBarItem(R.drawable.vector_history, "historyIcon", onClick = {}, highlighted = true),
                     NavBarItem(R.drawable.vector_qr, "qrIcon", onClick = viewModel::onQrClicked),
                     NavBarItem(R.drawable.vector_stats, "statsIcon", onClick = viewModel::onProfileClicked),
