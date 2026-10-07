@@ -246,7 +246,7 @@ fun HistoryScreen(
     }
 }
 
-// ============================== Шапка ==============================
+// Шапка
 
 @Composable
 private fun HistoryHeader(onAddClick: () -> Unit) {
@@ -275,7 +275,7 @@ private fun HistoryHeader(onAddClick: () -> Unit) {
     }
 }
 
-// ===================== Сводка текущего месяца =====================
+// Сводка текущего месяца
 
 @Composable
 private fun MonthSummaryRow(
@@ -366,7 +366,7 @@ private fun SmallStatCard(title: String, value: String, valueColor: androidx.com
 private fun formatMoney(value: Double): String = "%,.0f".format(value).replace(',', ' ')
 private fun formatVolume(value: Double): String = "%.1f".format(value)
 
-// ========================= Фильтры (чипы) =========================
+// Фильтры
 
 @Composable
 private fun FilterChipsRow(
@@ -554,7 +554,7 @@ private fun formatShortDate(raw: String): String {
     }
 }
 
-// =================== Bottom sheet "Добавить заправку" ===================
+// "Добавить заправку"
 
 @Composable
 private fun AddRefuelSheetContent(
