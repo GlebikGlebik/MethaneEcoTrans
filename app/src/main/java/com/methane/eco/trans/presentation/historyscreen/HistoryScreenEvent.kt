@@ -4,4 +4,6 @@ sealed class HistoryScreenEvent {
     data class ShowSnackbar(val message: String) : HistoryScreenEvent()
     object NavigateToMainScreen : HistoryScreenEvent()
     object NavigateToProfileScreen : HistoryScreenEvent()
+    object NavigateToQrScreen : HistoryScreenEvent()
+    object NavigateToMoreScreen : HistoryScreenEvent()
 }
