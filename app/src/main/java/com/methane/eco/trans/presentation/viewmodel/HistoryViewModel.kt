@@ -139,7 +139,6 @@ class HistoryViewModel(
     }
 
     // ================== Фильтры ==================
-
     fun onVehicleFilterChanged(vehicleId: String?) {
         _uiState.value = _uiState.value.copy(selectedVehicleId = vehicleId)
         loadHistory()
@@ -178,7 +177,7 @@ class HistoryViewModel(
         viewModelScope.launch { _events.send(HistoryScreenEvent.NavigateToMoreScreen) }
     }
 
-    // ================== Модалка "Добавить заправку" ==================
+    // ================== флаги ==================
 
     fun onShowAddRefuelSheetChanged(show: Boolean) {
         _uiState.value = if (show) {
@@ -189,16 +188,17 @@ class HistoryViewModel(
         }
     }
 
-    fun onAddDateChanged(value: String) {
-        _uiState.value = _uiState.value.copy(addDate = value)
+    // ================== снова сеттеры ==================
+    fun onAddDateChanged(date: String) {
+        _uiState.value = _uiState.value.copy(addDate = date)
     }
 
     fun onAddVolumeChanged(value: String) {
         _uiState.value = _uiState.value.copy(addVolume = value)
     }
 
-    fun onAddSumChanged(value: String) {
-        _uiState.value = _uiState.value.copy(addSum = value)
+    fun onAddSumChanged(sum: String) {
+        _uiState.value = _uiState.value.copy(addSum = sum)
     }
 
     fun onSubmitAddRefueling() {

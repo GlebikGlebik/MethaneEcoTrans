@@ -26,11 +26,12 @@ data class HistoryScreenUIState(
     val currentMonthTotalVolume: Double = 0.0,
     val currentMonthVisits: Int = 0,
 
-    // TODO: расчёта экономии (сравнение со стоимостью аналога на бензине) на
+    // TODO: расчёта экономии (сравнение со стоимостью аналога на бензине)
     val currentMonthSavings: Double = 0.0,
 
-    // --- модалка "Добавить заправку" (нижний bottom sheet) ---
+    // --- модалка "Добавить заправку"  ---
     val showAddRefuelSheet: Boolean = false,
+    val showFilterByMetrics: Boolean = false,
     val addDate: String = "",
     val addVolume: String = "",
     val addSum: String = "",

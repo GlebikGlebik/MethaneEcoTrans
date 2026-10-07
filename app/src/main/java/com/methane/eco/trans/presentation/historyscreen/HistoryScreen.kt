@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -174,7 +175,7 @@ fun HistoryScreen(
 
             item {
                 Spacer(Modifier.height(16.dp))
-                FilterChipsRow(
+                FilterRow(
                     uiState = uiState,
                     onOnlyFuelCardChanged = viewModel::onOnlyFuelCardChanged,
                     onSortByChanged = viewModel::onSortByChanged,
@@ -188,7 +189,9 @@ fun HistoryScreen(
                 uiState.isLoading -> {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = CustomTurquoiseBlue)
@@ -204,7 +207,9 @@ fun HistoryScreen(
                             fontFamily = segoe_ui,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(40.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp)
                         )
                     }
                 }
@@ -369,7 +374,7 @@ private fun formatVolume(value: Double): String = "%.1f".format(value)
 // Фильтры
 
 @Composable
-private fun FilterChipsRow(
+private fun FilterRow(
     uiState: HistoryScreenUIState,
     onOnlyFuelCardChanged: (Boolean) -> Unit,
     onSortByChanged: (SortBy) -> Unit,
@@ -380,21 +385,20 @@ private fun FilterChipsRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        //TODO: добавить фильтр-иконку
-        item { WhatToShowChip(uiState, onOnlyFuelCardChanged, onSortByChanged) }
-        item { VehicleFilterChip(uiState, onVehicleFilterChanged) }
-        item { GasStationFilterChip(uiState.selectedGasStationLabel) }
-        item { PeriodFilterChip(uiState.periodFilter, onPeriodFilterChanged) }
+        item { FilterByMetricsIcon(onSortByChanged)}
+        item { WhatToShowFilter(uiState, onOnlyFuelCardChanged) }
+        item { VehicleFilter(uiState, onVehicleFilterChanged) }
+        item { GasStationFilter(uiState.selectedGasStationLabel) }
+        item { PeriodFilter(uiState.periodFilter, onPeriodFilterChanged) }
     }
 }
-
 /**
  * Общая "оболочка" чипа-фильтра: пилюля с текстом + стрелкой, по клику
  * открывает DropdownMenu. [dropdownContent] получает лямбду close(),
  * которую нужно вызвать после выбора пункта, чтобы меню закрылось.
  */
 @Composable
-private fun FilterChipBase(
+private fun FilterBaseRow(
     label: String,
     dropdownContent: @Composable ColumnScope.(close: () -> Unit) -> Unit
 ) {
@@ -424,33 +428,33 @@ private fun FilterChipBase(
 }
 
 @Composable
-private fun WhatToShowChip(
-    uiState: HistoryScreenUIState,
-    onOnlyFuelCardChanged: (Boolean) -> Unit,
+private fun FilterBaseIcon(
+    dropdownContent: @Composable ColumnScope.(close: () -> Unit) -> Unit
+){
+    var expanded by remember { mutableStateOf(false) }
+
+    IconButton(onClick = { expanded = true }){
+        Icon(
+            painter = painterResource(id = R.drawable.vector_filter),
+            contentDescription = "filterIcon",
+            tint = CustomTurquoiseBlue,
+            modifier = Modifier.size(30.dp)
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(CustomTrafficWhite)
+        ) {
+            dropdownContent { expanded = false }
+        }
+    }
+
+}
+@Composable
+private fun FilterByMetricsIcon(
     onSortByChanged: (SortBy) -> Unit
 ) {
-    val label = when {
-        uiState.onlyFuelCard -> "По топливной карте"
-        uiState.sortBy != SortBy.DATE -> "Сорт: ${uiState.sortBy.name}"
-        else -> "Что показывать"
-    }
-    FilterChipBase(label = label) { close ->
-        DropdownMenuItem(
-            text = { Text("Все заправки", color = CustomGrey, fontSize = 13.sp) },
-            onClick = { onOnlyFuelCardChanged(false); close() }
-        )
-        DropdownMenuItem(
-            text = { Text("Только по топливной карте", color = CustomGrey, fontSize = 13.sp) },
-            onClick = { onOnlyFuelCardChanged(true); close() }
-        )
-        HorizontalDivider(color = CustomGrey.copy(alpha = 0.2f))
-        Text(
-            "Сортировка",
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            fontWeight = FontWeight.Bold,
-            color = CustomGrey,
-            fontSize = 11.sp
-        )
+    FilterBaseIcon { close ->
         DropdownMenuItem(
             text = { Text("По дате", color = CustomGrey, fontSize = 13.sp) },
             onClick = { onSortByChanged(SortBy.DATE); close() }
@@ -465,15 +469,37 @@ private fun WhatToShowChip(
         )
     }
 }
+        
+@Composable
+private fun WhatToShowFilter(
+    uiState: HistoryScreenUIState,
+    onOnlyFuelCardChanged: (Boolean) -> Unit
+) {
+    val label = when {
+        uiState.onlyFuelCard -> "По топливной карте"
+        uiState.sortBy != SortBy.DATE -> "Сорт: ${uiState.sortBy.name}"
+        else -> "Что показывать"
+    }
+    FilterBaseRow(label = label) { close ->
+        DropdownMenuItem(
+            text = { Text("Все заправки", color = CustomGrey, fontSize = 13.sp) },
+            onClick = { onOnlyFuelCardChanged(false); close() }
+        )
+        DropdownMenuItem(
+            text = { Text("Только по топливной карте", color = CustomGrey, fontSize = 13.sp) },
+            onClick = { onOnlyFuelCardChanged(true); close() }
+        )
+    }
+}
 
 @Composable
-private fun VehicleFilterChip(uiState: HistoryScreenUIState, onVehicleFilterChanged: (String?) -> Unit) {
+private fun VehicleFilter(uiState: HistoryScreenUIState, onVehicleFilterChanged: (String?) -> Unit) {
     val label = uiState.userVehicles
         .find { it.vehicleId == uiState.selectedVehicleId }
         ?.let { it.licensePlate ?: it.name }
         ?: "Автомобиль"
 
-    FilterChipBase(label = label) { close ->
+    FilterBaseRow(label = label) { close ->
         DropdownMenuItem(
             text = { Text("Все автомобили", color = CustomGrey, fontSize = 13.sp) },
             onClick = { onVehicleFilterChanged(null); close() }
@@ -488,10 +514,10 @@ private fun VehicleFilterChip(uiState: HistoryScreenUIState, onVehicleFilterChan
 }
 
 @Composable
-private fun GasStationFilterChip(currentLabel: String) {
+private fun GasStationFilter(currentLabel: String) {
     // TODO: когда на проекте появится больше одной станции — подключить
     // реальный список АЗС с бэкенда вместо единственного статичного пункта.
-    FilterChipBase(label = currentLabel) { close ->
+    FilterBaseRow(label = currentLabel) { close ->
         DropdownMenuItem(
             text = { Text("Все АЗС", color = CustomGrey, fontSize = 13.sp) },
             onClick = { close() }
@@ -500,9 +526,9 @@ private fun GasStationFilterChip(currentLabel: String) {
 }
 
 @Composable
-private fun PeriodFilterChip(current: PeriodFilter, onPeriodFilterChanged: (PeriodFilter) -> Unit) {
-    FilterChipBase(label = current.label) { close ->
-        PeriodFilter.values().forEach { period ->
+private fun PeriodFilter(current: PeriodFilter, onPeriodFilterChanged: (PeriodFilter) -> Unit) {
+    FilterBaseRow(label = current.label) { close ->
+        PeriodFilter.entries.forEach { period ->
             DropdownMenuItem(
                 text = { Text(period.label, color = CustomGrey, fontSize = 13.sp) },
                 onClick = { onPeriodFilterChanged(period); close() }
@@ -555,7 +581,6 @@ private fun formatShortDate(raw: String): String {
 }
 
 // "Добавить заправку"
-
 @Composable
 private fun AddRefuelSheetContent(
     date: String,
@@ -629,7 +654,9 @@ private fun AddRefuelField(
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 textStyle = TextStyle(color = CustomGrey, fontSize = 14.sp, fontFamily = segoe_ui),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
