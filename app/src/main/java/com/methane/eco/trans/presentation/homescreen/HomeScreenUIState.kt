@@ -1,11 +1,11 @@
-package com.methane.eco.trans.presentation.mainscreen
+package com.methane.eco.trans.presentation.homescreen
 
 import com.methane.eco.trans.data.dto.VehicleDto
 import com.methane.eco.trans.domain.model.HomeActionItem
 import com.methane.eco.trans.domain.model.defaultNewsItems
 import com.methane.eco.trans.domain.model.defaultServiceItems
 
-data class MainScreenUIState(
+data class HomeScreenUIState(
     val date: String = "",
     val userFullName: String = "",
     val volume: String = "",

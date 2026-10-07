@@ -1,8 +1,7 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.methane.eco.trans.presentation.mainscreen
+package com.methane.eco.trans.presentation.homescreen
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,16 +23,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,12 +48,14 @@ import com.methane.eco.trans.R
 import com.methane.eco.trans.data.local.TokenStorage
 import com.methane.eco.trans.data.repository.MainRepositoryImpl
 import com.methane.eco.trans.domain.model.HomeActionItem
+import com.methane.eco.trans.domain.model.NavBarItem
 import com.methane.eco.trans.domain.usecase.AddRefuelingUseCase
 import com.methane.eco.trans.domain.usecase.AddVehicleUseCase
 import com.methane.eco.trans.domain.usecase.DeleteVehicleUseCase
 import com.methane.eco.trans.domain.usecase.GetRefuelingHistoryUseCase
 import com.methane.eco.trans.domain.usecase.GetVehiclesUseCase
-import com.methane.eco.trans.presentation.viewmodel.MainScreenViewModel
+import com.methane.eco.trans.presentation.viewmodel.HomeScreenViewModel
+import com.methane.eco.trans.presentation.components.AppBottomNavBar
 import com.methane.eco.trans.segoe_ui
 import com.methane.eco.trans.segoe_ui_bold
 import com.methane.eco.trans.theme.CustomCarpiBlue
@@ -71,7 +67,7 @@ import com.methane.eco.trans.theme.CustomTurquoiseBlue
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: MainScreenViewModel = viewModel(
+    viewModel: HomeScreenViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val context = navController.context
@@ -84,7 +80,7 @@ fun MainScreen(
                 val addRefuelingUseCase = AddRefuelingUseCase(repository)
                 val getRefuelingHistoryUseCase = GetRefuelingHistoryUseCase(repository)
 
-                return MainScreenViewModel(
+                return HomeScreenViewModel(
                     getVehiclesUseCase,
                     addVehicleUseCase,
                     deleteVehicleUseCase,
@@ -103,13 +99,13 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MainScreenEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
-                is MainScreenEvent.NavigateToHistoryScreen -> navController.navigate("HistoryScreen")
-                is MainScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
-                is MainScreenEvent.NavigateToSettingsScreen -> navController.navigate("SettingsScreen")
-                is MainScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
-                is MainScreenEvent.NavigateToHomeScreen -> navController.navigate("MainScreen")
-                is MainScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
+                is HomeScreenEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is HomeScreenEvent.NavigateToHistoryScreen -> navController.navigate("HistoryScreen")
+                is HomeScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
+                is HomeScreenEvent.NavigateToSettingsScreen -> navController.navigate("SettingsScreen")
+                is HomeScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
+                is HomeScreenEvent.NavigateToHomeScreen -> navController.navigate("MainScreen")
+                is HomeScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
             }
         }
     }
@@ -117,12 +113,14 @@ fun MainScreen(
         containerColor = CustomTrafficWhite,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            HomeBottomNavBar(
-                onHomeClick = viewModel::onHomeClicked,
-                onHistoryClick = viewModel::onHistoryClicked,
-                onQrClick = viewModel::onQrClicked,
-                onProfileClick = viewModel::onProfileClicked,
-                onMoreClick = viewModel::onMoreClicked
+            AppBottomNavBar(
+                items = listOf(
+                    NavBarItem(R.drawable.vector_home, "homeIcon", onClick = {}, true),
+                    NavBarItem(R.drawable.vector_history, "historyIcon", onClick = viewModel::onHistoryClicked),
+                    NavBarItem(R.drawable.vector_qr, "qrIcon", onClick = viewModel::onQrClicked),
+                    NavBarItem(R.drawable.vector_stats, "statsIcon", onClick = viewModel::onProfileClicked),
+                    NavBarItem(R.drawable.vector_more, "moreIcon", onClick = viewModel::onMoreClicked)
+                )
             )
         }
     ) { innerPadding ->
@@ -215,7 +213,6 @@ private fun HomeHeader(userFullName: String, onSettingsClick: () -> Unit) {
 }
 
 //Дисконтная карта
-
 @Composable
 private fun CardBlock(cardNumber: String, discountAmount: Int) {
     Box(
@@ -263,7 +260,9 @@ private fun CardBlock(cardNumber: String, discountAmount: Int) {
                         fontSize = 11.sp
                     )
                     Text(
-                        formatCardNumber(cardNumber),
+                        text = cardNumber.ifBlank {
+                            "•••• ••••"
+                        },
                         color = CustomCarpiBlue,
                         fontFamily = segoe_ui_bold,
                         fontWeight = FontWeight.Bold,
@@ -291,46 +290,7 @@ private fun CardBlock(cardNumber: String, discountAmount: Int) {
     }
 }
 
-private fun formatCardNumber(raw: String): String {
-    if (raw.isBlank()) return "•••• ••••"
-    return raw.chunked(4).joinToString(" ")
-}
-
-/**
- * Стилизованная заглушка QR-кода (три угловых "маркера", как у настоящего QR).
- * Для реального сканируемого кода нужна библиотека генерации, например
- * com.google.zxing:core — она отдаёт готовый ImageBitmap по строке (токену
- * карты), который можно нарисовать через Image(bitmap = ...) вместо этого
- * Canvas-плейсхолдера.
- */
-@Composable
-private fun QrPlaceholder(size: Dp) {
-    Canvas(modifier = Modifier.size(size)) {
-        val block = this.size.width / 5f
-        val markerColor = androidx.compose.ui.graphics.Color(0xFF045195)
-
-        fun marker(cx: Float, cy: Float) {
-            drawRect(markerColor, topLeft = Offset(cx, cy), size = Size(block * 1.4f, block * 1.4f))
-            drawRect(
-                androidx.compose.ui.graphics.Color.White,
-                topLeft = Offset(cx + block * 0.35f, cy + block * 0.35f),
-                size = Size(block * 0.7f, block * 0.7f)
-            )
-        }
-
-        marker(0f, 0f)
-        marker(this.size.width - block * 1.4f, 0f)
-        marker(0f, this.size.height - block * 1.4f)
-        drawRect(
-            markerColor,
-            topLeft = Offset(this.size.width - block * 1.4f, this.size.height - block * 1.4f),
-            size = Size(block * 0.6f, block * 0.6f)
-        )
-    }
-}
-
-// ===================== Заголовки секций и карточки =====================
-
+//Заголовки секций и карточки
 @Composable
 private fun SectionTitle(text: String) {
     Text(
@@ -412,7 +372,6 @@ private fun HomeActionCard(item: HomeActionItem, onClick: () -> Unit) {
 }
 
 // эко-статистика
-
 @Composable
 private fun EcoStatsBlock(summary: String) {
     Row(
@@ -450,46 +409,6 @@ private fun EcoStatsBlock(summary: String) {
             lineHeight = 18.sp
         )
     }
-}
-
-// ========================= Нижняя навигация =========================
-
-@Composable
-private fun HomeBottomNavBar(
-    onHomeClick: () -> Unit,
-    onHistoryClick: () -> Unit,
-    onQrClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    onMoreClick: () -> Unit
-) {
-    Surface(color = CustomTurquoiseBlue, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(vertical = 14.dp, horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NavIcon(R.drawable.vector_home, "HomeIcon", onHomeClick)
-            NavIcon(R.drawable.vector_history, "historyIcon", onHistoryClick)
-            NavIcon(R.drawable.vector_qr, "qrIcon", onQrClick)
-            NavIcon(R.drawable.vector_profile, "profileIcon", onProfileClick)
-            NavIcon(R.drawable.vector_more, "moreIcon", onMoreClick)
-        }
-    }
-}
-
-@Composable
-private fun NavIcon(iconRes: Int, description: String, onClick: () -> Unit) {
-    Icon(
-        painter = painterResource(id = iconRes),
-        contentDescription = description,
-        tint = CustomTrafficWhite,
-        modifier = Modifier
-            .size(26.dp)
-            .clickable(onClick = onClick)
-    )
 }
 
 

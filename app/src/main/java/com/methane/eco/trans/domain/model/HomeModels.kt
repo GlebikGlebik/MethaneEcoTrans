@@ -5,7 +5,7 @@ import com.methane.eco.trans.R
 /**
  * Загрузку картинки по URL нужно будет подключить отдельно — рекомендуется
  * библиотека Coil (io.coil-kt:coil-compose), в HomeActionCard уже оставлена
- * точка подключения (см. комментарий TODO в MainScreen.kt).
+ * точка подключения (см. комментарий TODO в HomeScreen.kt).
  */
 data class HomeActionItem(
     val id: String,

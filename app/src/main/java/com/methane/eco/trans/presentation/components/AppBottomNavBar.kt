@@ -15,32 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.methane.eco.trans.domain.model.NavBarItem
 import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 
-/**
- * Один пункт нижней навигации.
- * [highlighted] — слегка увеличивает и делает полностью непрозрачной иконку
- * текущего экрана ("вы здесь"); остальные иконки чуть приглушены (alpha).
- */
-data class NavBarItem(
-    val iconRes: Int,
-    val contentDescription: String,
-    val onClick: () -> Unit,
-    val highlighted: Boolean = false
-)
-
-/**
- * Общая нижняя навигация. Раньше это был приватный HomeBottomNavBar прямо
- * внутри MainScreen.kt — вынес сюда, чтобы не копировать один и тот же
- * Surface+Row на каждом новом экране. Набор иконок передаётся списком,
- * т.к. на разных экранах дизайн показывает разные пункты (сравните нижнее
- * меню MainScreen и HistoryScreen — состав иконок отличается).
- *
- * TODO: MainScreen.kt сейчас всё ещё использует свой старый приватный
- * HomeBottomNavBar/NavIcon — его стоит отдельно смигрировать на этот
- * компонент, чтобы не держать два почти одинаковых куска кода.
- */
 @Composable
 fun AppBottomNavBar(items: List<NavBarItem>) {
     Surface(color = CustomTurquoiseBlue, modifier = Modifier.fillMaxWidth()) {

@@ -1,16 +1,14 @@
-package com.methane.eco.trans.presentation.mainscreen
+package com.methane.eco.trans.presentation.homescreen
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlin.random.Random
 
 private data class CircuitNode(val x: Float, val y: Float, val isSquare: Boolean)
 private data class CircuitLine(val start: Offset, val end: Offset)

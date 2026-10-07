@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.methane.eco.trans.presentation.enterscreen.EnterScreen
 import com.methane.eco.trans.presentation.historyscreen.HistoryScreen
-import com.methane.eco.trans.presentation.mainscreen.MainScreen
+import com.methane.eco.trans.presentation.homescreen.MainScreen
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreen
 import com.methane.eco.trans.presentation.regscreen.RegistrationScreen
 
