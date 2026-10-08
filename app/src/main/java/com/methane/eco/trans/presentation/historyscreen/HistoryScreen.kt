@@ -110,10 +110,10 @@ fun HistoryScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is HistoryScreenEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
-                is HistoryScreenEvent.NavigateToMainScreen -> navController.navigate("MainScreen")
+                is HistoryScreenEvent.NavigateToHomeScreen -> navController.navigate("HomeScreen")
                 is HistoryScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
                 is HistoryScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
-                is HistoryScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
+                is HistoryScreenEvent.NavigateToMenuScreen -> navController.navigate("MenuScreen")
             }
         }
     }
@@ -140,7 +140,7 @@ fun HistoryScreen(
         bottomBar = {
             AppBottomNavBar(
                 items = listOf(
-                    NavBarItem(R.drawable.vector_home,"homeIcon",onClick = viewModel::onMainClicked),
+                    NavBarItem(R.drawable.vector_home,"homeIcon",onClick = viewModel::onHomeClicked),
                     NavBarItem(R.drawable.vector_history, "historyIcon", onClick = {}, highlighted = true),
                     NavBarItem(R.drawable.vector_qr, "qrIcon", onClick = viewModel::onQrClicked),
                     NavBarItem(R.drawable.vector_stats, "statsIcon", onClick = viewModel::onProfileClicked),
