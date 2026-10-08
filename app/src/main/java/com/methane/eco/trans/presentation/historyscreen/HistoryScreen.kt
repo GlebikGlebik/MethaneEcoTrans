@@ -405,17 +405,27 @@ private fun FilterBaseRow(
     var expanded by remember { mutableStateOf(false) }
     Box {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .border(1.dp, CustomTurquoiseBlue, RoundedCornerShape(50))
+                .border(2.dp, CustomTurquoiseBlue, RoundedCornerShape(50))
                 .background(CustomTrafficWhite)
                 .clickable { expanded = true }
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
             Text(label, color = CustomGrey, fontFamily = segoe_ui, fontSize = 13.sp)
             Spacer(Modifier.width(4.dp))
-            Text("⌄", color = CustomGrey, fontSize = 13.sp)
+            Box(
+                modifier = Modifier
+                    .padding(top = 2.dp)
+            ){
+                Icon(
+                    painter = painterResource(R.drawable.vector_arrow_down),
+                    contentDescription = "DropDownIcon",
+                    tint = CustomGrey,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
         DropdownMenu(
             expanded = expanded,
