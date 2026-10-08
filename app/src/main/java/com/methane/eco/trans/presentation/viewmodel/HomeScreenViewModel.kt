@@ -122,7 +122,7 @@ class HomeScreenViewModel(
     }
 
     fun onMoreClicked() {
-        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToMoreScreen) }
+        viewModelScope.launch { _events.send(HomeScreenEvent.NavigateToMenuScreen) }
     }
 
     fun onActionItemClicked(item: HomeActionItem) {

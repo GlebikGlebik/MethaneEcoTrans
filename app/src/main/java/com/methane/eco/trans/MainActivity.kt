@@ -12,7 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.methane.eco.trans.presentation.enterscreen.EnterScreen
 import com.methane.eco.trans.presentation.historyscreen.HistoryScreen
-import com.methane.eco.trans.presentation.homescreen.MainScreen
+import com.methane.eco.trans.presentation.homescreen.HomeScreen
+import com.methane.eco.trans.presentation.menuscreen.MenuScreen
 import com.methane.eco.trans.presentation.profilescreen.ProfileScreen
 import com.methane.eco.trans.presentation.regscreen.RegistrationScreen
 
@@ -34,9 +35,10 @@ class MainActivity : ComponentActivity(){
                 NavHost(navController, startDestination = "EnterScreen"){
                     composable("EnterScreen") { EnterScreen(navController) }
                     composable("RegistrationScreen") { RegistrationScreen(navController) }
-                    composable("MainScreen") { MainScreen(navController) }
+                    composable("HomeScreen") { HomeScreen(navController) }
                     composable("ProfileScreen") { ProfileScreen(navController) }
                     composable("HistoryScreen") { HistoryScreen(navController) }
+                    composable("MenuScreen") { MenuScreen(navController) }
                 }
             }
         }

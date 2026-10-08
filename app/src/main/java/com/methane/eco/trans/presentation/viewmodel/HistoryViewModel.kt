@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 class HistoryViewModel(
     private val getVehiclesUseCase: GetVehiclesUseCase,
     private val getRefuelingHistoryUseCase: GetRefuelingHistoryUseCase,
-    private val addRefuelingUseCase: AddRefuelingUseCase // НОВОЕ: нужен для модалки "Добавить заправку"
+    private val addRefuelingUseCase: AddRefuelingUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryScreenUIState())
@@ -161,8 +161,8 @@ class HistoryViewModel(
 
     // ================== Навигация нижнего меню ==================
 
-    fun onMainClicked() {
-        viewModelScope.launch { _events.send(HistoryScreenEvent.NavigateToMainScreen) }
+    fun onHomeClicked() {
+        viewModelScope.launch { _events.send(HistoryScreenEvent.NavigateToHomeScreen) }
     }
 
     fun onProfileClicked() {
@@ -174,7 +174,7 @@ class HistoryViewModel(
     }
 
     fun onMoreClicked() {
-        viewModelScope.launch { _events.send(HistoryScreenEvent.NavigateToMoreScreen) }
+        viewModelScope.launch { _events.send(HistoryScreenEvent.NavigateToMenuScreen) }
     }
 
     // ================== флаги ==================

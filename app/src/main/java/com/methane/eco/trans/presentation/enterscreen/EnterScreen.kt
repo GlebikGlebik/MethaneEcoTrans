@@ -68,7 +68,7 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
         viewModel.events.collect { event ->
             when (event) {
                 is EnterScreenEvent.ShowSnackbar -> {snackbarHostState.showSnackbar(event.message)}
-                is EnterScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") {
+                is EnterScreenEvent.NavigateToHomeScreen -> { navController.navigate("HomeScreen") {
                     popUpTo("EnterScreen") {inclusive = true}
                 } }
                 is EnterScreenEvent.NavigateToRegistrationScreen -> { navController.navigate("RegistrationScreen") }
@@ -238,7 +238,7 @@ fun EnterScreen(navController: NavController, viewModel: EnterViewModel = viewMo
                     )
                     .background(CustomCarpiBlue, shape = RoundedCornerShape(10.dp))
                     .clickable {
-                        navController.navigate("MainScreen")
+                        navController.navigate("HomeScreen")
                         //if (!uiState.isLoading){
                         //    viewModel.onEnterClicked() }
                     }

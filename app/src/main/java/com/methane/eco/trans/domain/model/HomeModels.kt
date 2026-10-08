@@ -19,7 +19,7 @@ data class HomeActionItem(
  *
  * TODO: как только на бэкенде появится реальный эндпоинт (например,
  * GET /api/v1/services), эти данные нужно будет загружать через новый
- * UseCase/Repository в MainScreenViewModel, а не хранить как значения
+ * UseCase/Repository в HomeScreenViewModel, а не хранить как значения
  * по умолчанию в UI-состоянии.
  */
 fun defaultServiceItems(): List<HomeActionItem> = listOf(
