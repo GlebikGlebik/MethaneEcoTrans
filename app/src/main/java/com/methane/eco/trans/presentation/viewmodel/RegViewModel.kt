@@ -89,7 +89,7 @@ class RegViewModel(
                 }
 
                 when (result) {
-                    is AuthResult.Success -> _events.send(RegScreenEvent.NavigateToMainScreen)
+                    is AuthResult.Success -> _events.send(RegScreenEvent.NavigateToHomeScreen)
                     is AuthResult.Error -> _events.send(RegScreenEvent.ShowSnackbar(result.message))
                 }
             } catch (e: Exception) {

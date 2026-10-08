@@ -68,7 +68,7 @@ class EnterViewModel(
 
             when (result) {
                 is AuthResult.Success -> {
-                    _events.send(EnterScreenEvent.NavigateToMainScreen)
+                    _events.send(EnterScreenEvent.NavigateToHomeScreen)
                 }
                 is AuthResult.Error -> {
                     _events.send(EnterScreenEvent.ShowSnackbar(result.message))

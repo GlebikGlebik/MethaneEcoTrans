@@ -65,7 +65,7 @@ import com.methane.eco.trans.theme.CustomTrafficWhite
 import com.methane.eco.trans.theme.CustomTurquoiseBlue
 
 @Composable
-fun MainScreen(
+fun HomeScreen(
     navController: NavController,
     viewModel: HomeScreenViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -104,8 +104,8 @@ fun MainScreen(
                 is HomeScreenEvent.NavigateToProfileScreen -> navController.navigate("ProfileScreen")
                 is HomeScreenEvent.NavigateToSettingsScreen -> navController.navigate("SettingsScreen")
                 is HomeScreenEvent.NavigateToQrScreen -> navController.navigate("QrScreen")
-                is HomeScreenEvent.NavigateToHomeScreen -> navController.navigate("MainScreen")
-                is HomeScreenEvent.NavigateToMoreScreen -> navController.navigate("MoreScreen")
+                is HomeScreenEvent.NavigateToHomeScreen -> navController.navigate("HomeScreen")
+                is HomeScreenEvent.NavigateToMenuScreen -> navController.navigate("MenuScreen")
             }
         }
     }

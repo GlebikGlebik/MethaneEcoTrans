@@ -74,7 +74,7 @@ fun RegistrationScreen(navController: NavController, viewModel: RegViewModel = v
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when(event){
-                is RegScreenEvent.NavigateToMainScreen -> { navController.navigate("MainScreen") {
+                is RegScreenEvent.NavigateToHomeScreen -> { navController.navigate("HomeScreen") {
                     popUpTo("RegistrationScreen") {inclusive}
                 }}
                 is RegScreenEvent.NavigateToEnterScreen -> { navController.navigate("EnterScreen")}

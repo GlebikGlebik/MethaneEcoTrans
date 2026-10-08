@@ -618,7 +618,7 @@ fun ProfileScreen(navController: NavController){
                                         .fillMaxSize()
                                         .clickable{
                                             if (description == "main"){
-                                                navController.navigate("MainScreen")
+                                                navController.navigate("HomeScreen")
                                             }
                                             if (description == "history"){
                                                 navController.navigate("HistoryScreen")
